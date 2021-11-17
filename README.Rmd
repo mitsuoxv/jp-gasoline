@@ -90,8 +90,10 @@ Yes, both retail and wholesale prices are rising.
 combo %>% 
   filter(name != "difference") %>% 
   autoplot(value) +
+  geom_hline(yintercept = 170/1.1, color = "gray50") +
+  annotate("text", x = yearmonth("2010 Jan"), y = 160, label = "155 (170 including consumption tax)", size = 4) +
   expand_limits(y = 0) +
-  labs(y = "Yen per litre", title = "Gasoline prices in Japan") +
+  labs(y = "Yen per litre\n(excluding consumption tax)", title = "Gasoline prices in Japan") +
   guides(colour = guide_legend(title = NULL))
 
 ```
