@@ -14,13 +14,19 @@ library(tidyverse)
 library(readxl)
 library(tsibble)
 library(fable)
+library(lubridate)
+library(pdftools)
 ```
 
 Updated: `r Sys.Date()`
 
-## Motivation
+## Summary
 
-[Nikkei reported](https://www.nikkei.com/article/DGXZQOUA169350W1A111C2000000/) on November 17, 2021 that Ministry of Economy, Trade and Industry (METI) is considering a subsidy to gasoline wholesalers to suppress gasoline retail prices when they rise to higher than 170 yen per litre. At the end of the article, Nikkei showed a skeptical view saying, "As the number of retailers has decreased, the retailers may not reduce retail prices even if wholesale prices fall." So I would like to study the relationship between retail and wholesale prices of gasoline in Japan.
+[Nikkei reported](https://www.nikkei.com/article/DGXZQOUA169350W1A111C2000000/) on November 17, 2021 that Ministry of Economy, Trade and Industry (METI) is considering a subsidy to gasoline wholesalers to suppress gasoline retail prices when they rise to higher than 170 yen per litre. At the end of the article, Nikkei showed a skeptical view saying, "As the number of retailers has decreased, the retailers may not reduce retail prices even if wholesale prices fall." So I study the relationship among retail and wholesale prices of gasoline and imported crude oil prices in Japan.
+
+I find the current surge in retail prices of gasoline is mainly due to the surge in imported crude oil prices, and partly due to the reduced competition among retailers and wholesalers, who are getting more margins.
+
+To give a subsidy to wholesalers may incentivize them to raise their margins even more. This subsidy idea is contrary to that of the Biden Administration, which has begun to investigate oil companies.
 
 ## Get gasoline prices
 
@@ -72,44 +78,184 @@ retail_price_month <- retail_price %>%
   index_by(month = yearmonth(date)) %>% 
   summarize(retail_price = mean(retail_price))
 
+```
+
+I get imported crude oil price data from customs statistics via [e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0). 
+
+```{r get_crude_from_csv, echo=FALSE, message=FALSE}
+
+get_crude_oil_price <- function(df) {
+  df %>% 
+    mutate(Commodity =  str_remove_all(Commodity, "'| ")) %>% 
+    filter(Commodity == "30301") %>% 
+    pivot_longer(starts_with("Quantity-"), names_to = "month", values_to = "quantity") %>% 
+    pivot_longer(starts_with("Value-")) %>% 
+    mutate(
+      month = str_remove(month, "Quantity-"),
+      name = str_remove(name, "Value-")
+    ) %>% 
+    filter(month == name, month != "Year") %>% 
+    mutate(
+      month = if_else(month == "Apl", "Apr", month),
+      date = dmy(paste(1, month, Year)),
+      crude_oil_price = value / quantity
+    ) %>% 
+    select(date, crude_oil_price)
+}
+
+import <- paste0("data/", dir("data/", ".csv")) %>% 
+  map(~ read_csv(.x) %>% get_crude_oil_price) %>% 
+  bind_rows() %>% 
+  filter(!is.na(crude_oil_price))
+
+```
+
+```{r get_crude_from_pdf, echo=FALSE, eval=FALSE}
+
+get_from_pdf <- function(id) {
+  paste0("https://www.e-stat.go.jp/stat-search/file-download?statInfId=00000", id, "&fileKind=2") %>% 
+    pdf_text() %>% 
+    read_csv() %>% 
+    setNames(c("line")) %>% 
+    filter(str_detect(line, "^\\d")) %>% 
+    pull(line) %>% 
+    paste(collapse = "\n") %>% 
+    read_fwf(col_positions = fwf_widths(c(23, 2, 15, 17, 17, 11)),
+             col_types = cols(.default = col_character())) %>% 
+    mutate(statInfId = id)
+}
+
+id_date <- tibble(
+  statInfId = c("2356861", "2360681", "2366821", # 2001
+               "2370903", "2374447", "2377215",
+               "2388625", "2395224", "2400500",
+               "2403671", "2409041", "2413944",
+               "2353533", "2368407", "2373904", # 2002
+               "2390257", "2397348", "2406335",
+               "2414755", "2419894", "2434540",
+               "2462003", "2477263", "2487568",
+               "2154280", "2159214", "2167204", # 2003
+               "2172358", "2182731", "2187465",
+               "2192337", "2196921", "2203979",
+               "2206662", "2210342", "2214409",
+               "2154829", "2163290", "2170020", # 2004
+               "2176027", "2184517", "2193631",
+               "2212517", "2216694", "2224086",
+               "2243822", "2253031", "2263407",
+               "2221012", "2225946", "2228322", # 2005
+               "2231036", "2234710", "2238784",
+               "2243156", "2248685", "2251982",
+               "2254626", "2257154", "2263286",
+               "2070609", "2073232", "2075826", # 2006
+               "2078138", "2080876", "2084239",
+               "2086779", "2089357", "2091820",
+               "2094179", "2096541", "2099394",
+               "2101765", "2104568", "2107778", # 2007
+               "2110529", "2113720", "2116186",
+               "2119134", "2122199", "2125080",
+               "2127655", "2130968", "2133192",
+               "2524275", "2524925", "2525183", # 2008
+               "2525808", "2526624", "2527557",
+               "2528619", "2530117", "2530804", 
+               "2534412", "2531505", "2532132"
+               ),
+  date = map(2001:2008, ~ make_date(year = .x, month = 1:12)) %>% 
+      unlist() %>% 
+      as.Date(origin = "1970-01-01")
+)
+
+import_pdf <- map(id_date$statInfId, ~ get_from_pdf(.x)) %>% 
+  bind_rows() %>% 
+  left_join(id_date, by = "statInfId")
+
+save(import_pdf, file = "data/import_from_pdf.rda")
+
+```
+
+```{r load_pdf_data, echo=FALSE}
+
+load(file = "data/import_from_pdf.rda")
+
+```
+
+```{r combine, echo=FALSE}
+
+import_price <- import_pdf %>% 
+  filter(X1 == "30301") %>% 
+  select(date, quantity = X3, value = X4) %>% 
+  mutate(
+    across(quantity:value, as.numeric),
+    crude_oil_price = value / quantity
+    ) %>% 
+  select(date, crude_oil_price) %>% 
+  bind_rows(import)  %>% 
+  mutate(month = yearmonth(date)) %>% 
+  as_tsibble(index = month) %>% 
+  select(-date)
+
 combo <- retail_price_month %>% 
   filter_index("2000 Jul" ~ .) %>% 
   left_join(wholesale_price, by = "month") %>% 
-  mutate(difference = retail_price - wholesale_price) %>% 
-  pivot_longer(retail_price:difference) %>% 
+  left_join(import_price, by = "month") %>% 
+  mutate(
+    crude_plus_tax = crude_oil_price + 53.8,
+    diff_rw = retail_price - wholesale_price,
+    diff_wc = wholesale_price - crude_plus_tax
+    ) %>% 
+  pivot_longer(retail_price:diff_wc) %>% 
   update_tsibble(key = name)
 
 ```
 
-## Plot retail and wholesale prices
+## Plot retail, wholesale gas and crude oil prices
 
-Yes, both retail and wholesale prices are rising.
+Yes, both retail and wholesale prices are rising, mainly due to rising imported crude oil prices.
 
 ```{r plot1, echo=FALSE, warning=FALSE}
 
 combo %>% 
-  filter(name != "difference") %>% 
+  filter(name %in% c("retail_price", "wholesale_price", "crude_plus_tax")) %>% 
   autoplot(value) +
   geom_hline(yintercept = 170/1.1, color = "gray50") +
   annotate("text", x = yearmonth("2010 Jan"), y = 160, label = "155 (170 including consumption tax)", size = 4) +
-  expand_limits(y = 0) +
-  labs(y = "Yen per litre\n(excluding consumption tax)", title = "Gasoline prices in Japan") +
-  guides(colour = guide_legend(title = NULL))
+  geom_hline(yintercept = 53.8, color = "gray50") +
+  annotate("text", x = yearmonth("2010 Jan"), y = 59, label = "53.8 gasoline tax", size = 4) +
+  annotate("text", x = yearmonth("2000 Jan"), y = 110, label = "Retail", size = 4) +
+  annotate("text", x = yearmonth("2001 Jan"), y = 90, label = "Wholesale", size = 4) +
+  annotate("text", x = yearmonth("2003 Jan"), y = 70, label = "Crude oil (right axis)", size = 4) +expand_limits(y = 0) +
+  scale_y_continuous(
+    name = "Yen per litre\n(excluding consumption tax)",
+    sec.axis = sec_axis(~ .x - 53.8)
+  ) +
+  labs(title = "Gasoline and crude oil prices in Japan") +
+  theme(legend.position = "none")
 
 ```
 
 ## Plot price differences
 
-Differences between retail and wholesale prices have been increasing since 2016. The mean difference was `r combo %>% filter(name == "difference") %>% filter_index("2000 Jul" ~ "2015 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2000 Jul to 2015 Dec, and is `r combo %>% filter(name == "difference", !is.na(value)) %>% slice_tail(n = 1) %>% pull(value) %>% round()` in `r combo %>% filter(name == "difference", !is.na(value)) %>% slice_tail(n = 1) %>% pull(month)`. This may reflect the reduced competition among retailers. You can see the number of retailers has constantly decreased since around 1995 in the last page of [this material (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf) from Agency for National Resources Energy.
+Differences between retail and wholesale prices have been increasing since 2016. The average difference was `r combo %>% filter(name == "diff_rw") %>% filter_index("2000 Jul" ~ "2015 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2000 Jul to 2015 Dec, and is `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(value) %>% round()` in `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(month)`. This may reflect the reduced competition among retailers. You can see the number of retailers has constantly decreased since around 1995 in the last page of [this material (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf) from Agency for National Resources Energy.
 
 ```{r plot 2, echo=FALSE, warning=FALSE}
 
 combo %>% 
-  filter(name == "difference") %>% 
+  filter(name == "diff_rw") %>% 
   autoplot(value) +
   expand_limits(y = 0) +
   labs(y = "Yen per litre",
        title = "Differences between retail and wholesale prices")
+
+```
+
+Differences between wholesale price and imported crude oil price plus gasoline tax have also been increasing. The average difference was `r combo %>% filter(name == "diff_wc") %>% filter_index("2001 Jan" ~ "2014 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2001 Jan to 2014 Dec, and is `r combo %>% filter(name == "diff_wc", !is.na(value)) %>% slice_tail(n = 1) %>% pull(value) %>% round()` in `r combo %>% filter(name == "diff_wc", !is.na(value)) %>% slice_tail(n = 1) %>% pull(month)`. This may reflect the reduced competition among wholesalers, who have got monopolistic power by consolidation.
+
+```{r plot3, echo=FALSE, warning=FALSE}
+
+combo %>% 
+  filter(name == "diff_wc") %>% 
+  autoplot(value) +
+  labs(y = "Yen per litre",
+       title = "Differences between wholesale price and\nimported crude oil price + gasoline tax")
 
 ```
 

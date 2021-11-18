@@ -3,15 +3,15 @@ Gasoline prices in Japan
 Mitsuo Shiota
 2021-11-17
 
--   [Motivation](#motivation)
+-   [Summary](#summary)
 -   [Get gasoline prices](#get-gasoline-prices)
--   [Plot retail and wholesale
-    prices](#plot-retail-and-wholesale-prices)
+-   [Plot retail, wholesale gas and crude oil
+    prices](#plot-retail-wholesale-gas-and-crude-oil-prices)
 -   [Plot price differences](#plot-price-differences)
 
-Updated: 2021-11-17
+Updated: 2021-11-18
 
-## Motivation
+## Summary
 
 [Nikkei
 reported](https://www.nikkei.com/article/DGXZQOUA169350W1A111C2000000/)
@@ -20,8 +20,18 @@ is considering a subsidy to gasoline wholesalers to suppress gasoline
 retail prices when they rise to higher than 170 yen per litre. At the
 end of the article, Nikkei showed a skeptical view saying, “As the
 number of retailers has decreased, the retailers may not reduce retail
-prices even if wholesale prices fall.” So I would like to study the
-relationship between retail and wholesale prices of gasoline in Japan.
+prices even if wholesale prices fall.” So I study the relationship among
+retail and wholesale prices of gasoline and imported crude oil prices in
+Japan.
+
+I find the current surge in retail prices of gasoline is mainly due to
+the surge in imported crude oil prices, and partly due to the reduced
+competition among retailers and wholesalers, who are getting more
+margins.
+
+To give a subsidy to wholesalers may incentivize them to raise their
+margins even more. This subsidy idea is contrary to that of the Biden
+Administration, which has begun to investigate oil companies.
 
 ## Get gasoline prices
 
@@ -31,16 +41,20 @@ site](https://www.enecho.meti.go.jp/statistics/petroleum_and_lpgas/pl007/results
 Although the original retail price data include consumption tax since
 April 1, 2004, I exclude consumption tax all over the period.
 
-## Plot retail and wholesale prices
+I get imported crude oil price data from customs statistics via
+[e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0).
 
-Yes, both retail and wholesale prices are rising.
+## Plot retail, wholesale gas and crude oil prices
+
+Yes, both retail and wholesale prices are rising, mainly due to rising
+imported crude oil prices.
 
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
 ## Plot price differences
 
 Differences between retail and wholesale prices have been increasing
-since 2016. The mean difference was 12 yen per litre from 2000 Jul to
+since 2016. The average difference was 12 yen per litre from 2000 Jul to
 2015 Dec, and is 18 in 2021 Sep. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
@@ -49,5 +63,13 @@ material
 from Agency for National Resources Energy.
 
 ![](README_files/figure-gfm/plot%202-1.png)<!-- -->
+
+Differences between wholesale price and imported crude oil price plus
+gasoline tax have also been increasing. The average difference was 16
+yen per litre from 2001 Jan to 2014 Dec, and is 21 in 2021 Sep. This may
+reflect the reduced competition among wholesalers, who have got
+monopolistic power by consolidation.
+
+![](README_files/figure-gfm/plot3-1.png)<!-- -->
 
 EOL
