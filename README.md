@@ -9,7 +9,7 @@ Mitsuo Shiota
     prices](#plot-retail-wholesale-gas-and-crude-oil-prices)
 -   [Plot price differences](#plot-price-differences)
 
-Updated: 2021-12-25
+Updated: 2022-01-08
 
 ## Summary
 
@@ -55,7 +55,7 @@ imported crude oil prices.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 15 in 2021 Oct. This may reflect the reduced
+2015 Dec, and is 18 in 2021 Nov. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -66,7 +66,7 @@ from Agency for National Resources Energy.
 
 Differences between wholesale price and imported crude oil price plus
 gasoline tax have also been increasing. The average difference was 16
-yen per litre from 2001 Jan to 2014 Dec, and is 26 in 2021 Oct. This may
+yen per litre from 2001 Jan to 2014 Dec, and is 23 in 2021 Nov. This may
 reflect the reduced competition among wholesalers, who have got
 monopolistic power by consolidation.
 
