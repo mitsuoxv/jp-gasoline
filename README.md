@@ -9,7 +9,7 @@ Mitsuo Shiota
     prices](#plot-retail-wholesale-gas-and-crude-oil-prices)
 -   [Plot price differences](#plot-price-differences)
 
-Updated: 2022-01-08
+Updated: 2022-01-28
 
 ## Summary
 
