@@ -8,8 +8,9 @@ Mitsuo Shiota
 -   [Plot retail, wholesale gas and crude oil
     prices](#plot-retail-wholesale-gas-and-crude-oil-prices)
 -   [Plot price differences](#plot-price-differences)
+-   [Dubai crude oil price](#dubai-crude-oil-price)
 
-Updated: 2022-01-28
+Updated: 2022-03-11
 
 ## Summary
 
@@ -55,7 +56,7 @@ imported crude oil prices.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 18 in 2021 Nov. This may reflect the reduced
+2015 Dec, and is 18 in 2022 Jan. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -66,10 +67,161 @@ from Agency for National Resources Energy.
 
 Differences between wholesale price and imported crude oil price plus
 gasoline tax have also been increasing. The average difference was 16
-yen per litre from 2001 Jan to 2014 Dec, and is 23 in 2021 Nov. This may
+yen per litre from 2001 Jan to 2014 Dec, and is 16 in 2021 Dec. This may
 reflect the reduced competition among wholesalers, who have got
 monopolistic power by consolidation.
 
 ![](README_files/figure-gfm/plot3-1.png)<!-- -->
+
+## Dubai crude oil price
+
+``` r
+library(tidyquant)
+```
+
+    ## Loading required package: PerformanceAnalytics
+
+    ## Loading required package: xts
+
+    ## Loading required package: zoo
+
+    ## 
+    ## Attaching package: 'zoo'
+
+    ## The following object is masked from 'package:tsibble':
+    ## 
+    ##     index
+
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     as.Date, as.Date.numeric
+
+    ## 
+    ## Attaching package: 'xts'
+
+    ## The following objects are masked from 'package:dplyr':
+    ## 
+    ##     first, last
+
+    ## 
+    ## Attaching package: 'PerformanceAnalytics'
+
+    ## The following object is masked from 'package:graphics':
+    ## 
+    ##     legend
+
+    ## Loading required package: quantmod
+
+    ## Loading required package: TTR
+
+    ## Registered S3 method overwritten by 'quantmod':
+    ##   method            from
+    ##   as.zoo.data.frame zoo
+
+    ## ══ Need to Learn tidyquant? ════════════════════════════════════════════════════
+    ## Business Science offers a 1-hour course - Learning Lab #9: Performance Analysis & Portfolio Optimization with tidyquant!
+    ## </> Learn more at: https://university.business-science.io/p/learning-labs-pro </>
+
+    ## 
+    ## Attaching package: 'tidyquant'
+
+    ## The following object is masked from 'package:fable':
+    ## 
+    ##     VAR
+
+``` r
+dub_oil <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "1990-01-01")
+```
+
+    ## Registered S3 method overwritten by 'tune':
+    ##   method                   from   
+    ##   required_pkgs.model_spec parsnip
+
+``` r
+dub_oil_month <- dub_oil %>% 
+  pivot_wider(names_from = symbol, values_from = price) %>% 
+  mutate(dub_oil_price = POILDUBUSDM * EXJPUS / 158.99) %>% 
+  select(date, dub_oil_price) %>% 
+  mutate(month = yearmonth(date)) %>% 
+  as_tsibble(index = month) %>% 
+  select(-date)
+```
+
+Import prices pretty precisely follow Dubai crude oil spot prices of one
+month ago.
+
+``` r
+dub_import <- dub_oil_month %>% 
+  inner_join(import_price, by = "month") %>% 
+  rename(import_price = crude_oil_price) %>% 
+  filter(!is.na(dub_oil_price), !is.na(import_price))
+
+dub_import %>% 
+  pivot_longer(c(import_price, dub_oil_price)) %>% 
+  autoplot(value)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+``` r
+dub_import %>% 
+  mutate(lag_dub = lag(dub_oil_price)) %>% 
+  select(-dub_oil_price) %>% 
+  pivot_longer(c(import_price, lag_dub)) %>% 
+  autoplot(value)
+```
+
+    ## Warning: Removed 1 row(s) containing missing values (geom_path).
+
+![](README_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+
+``` r
+p0 <- dub_import %>% 
+  ggplot(aes(dub_oil_price, import_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p1 <- dub_import %>% 
+  ggplot(aes(lag(dub_oil_price, 1), import_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p2 <- dub_import %>% 
+  ggplot(aes(lag(dub_oil_price, 2), import_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p0 | p1 | p2
+```
+
+    ## Warning: Removed 1 rows containing missing values (geom_point).
+
+    ## Warning: Removed 2 rows containing missing values (geom_point).
+
+![](README_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
+
+``` r
+length(dub_import$dub_oil_price)
+```
+
+    ## [1] 251
+
+``` r
+cor(dub_import$dub_oil_price, dub_import$import_price) # 0.967
+```
+
+    ## [1] 0.967359
+
+``` r
+cor(dub_import$dub_oil_price[-251], dub_import$import_price[-1]) # 0.997
+```
+
+    ## [1] 0.9973712
+
+``` r
+cor(dub_import$dub_oil_price[c(-250, -251)], dub_import$import_price[c(-1, -2)]) # 0.974
+```
+
+    ## [1] 0.9743748
 
 EOL

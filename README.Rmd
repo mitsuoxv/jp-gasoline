@@ -16,6 +16,7 @@ library(tsibble)
 library(fable)
 library(lubridate)
 library(pdftools)
+library(patchwork)
 ```
 
 Updated: `r Sys.Date()`
@@ -34,7 +35,7 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 
 ```{r get_data, echo=FALSE, message=FALSE}
 
-wholesale <- read_excel("data/211228o5.xls",
+wholesale <- read_excel("data/220228o5.xls",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 55))
                         ) %>% 
@@ -49,7 +50,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/220126s5.xls", 
+retail <- read_excel("data/220309s5.xls", 
                      sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 59)))
 
@@ -256,6 +257,66 @@ combo %>%
   autoplot(value) +
   labs(y = "Yen per litre",
        title = "Differences between wholesale price and\nimported crude oil price + gasoline tax")
+
+```
+
+## Dubai crude oil price
+
+Import prices pretty precisely follow Dubai crude oil spot prices of one month ago.
+
+```{r}
+library(tidyquant)
+
+dub_oil <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "1990-01-01")
+
+dub_oil_month <- dub_oil %>% 
+  pivot_wider(names_from = symbol, values_from = price) %>% 
+  mutate(dub_oil_price = POILDUBUSDM * EXJPUS / 158.99) %>% 
+  select(date, dub_oil_price) %>% 
+  mutate(month = yearmonth(date)) %>% 
+  as_tsibble(index = month) %>% 
+  select(-date)
+```
+
+
+```{r}
+
+dub_import <- dub_oil_month %>% 
+  inner_join(import_price, by = "month") %>% 
+  rename(import_price = crude_oil_price) %>% 
+  filter(!is.na(dub_oil_price), !is.na(import_price))
+
+dub_import %>% 
+  pivot_longer(c(import_price, dub_oil_price)) %>% 
+  autoplot(value)
+
+dub_import %>% 
+  mutate(lag_dub = lag(dub_oil_price)) %>% 
+  select(-dub_oil_price) %>% 
+  pivot_longer(c(import_price, lag_dub)) %>% 
+  autoplot(value)
+
+p0 <- dub_import %>% 
+  ggplot(aes(dub_oil_price, import_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p1 <- dub_import %>% 
+  ggplot(aes(lag(dub_oil_price, 1), import_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p2 <- dub_import %>% 
+  ggplot(aes(lag(dub_oil_price, 2), import_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p0 | p1 | p2
+
+length(dub_import$dub_oil_price)
+cor(dub_import$dub_oil_price, dub_import$import_price) # 0.967
+cor(dub_import$dub_oil_price[-251], dub_import$import_price[-1]) # 0.997
+cor(dub_import$dub_oil_price[c(-250, -251)], dub_import$import_price[c(-1, -2)]) # 0.974
 
 ```
 
