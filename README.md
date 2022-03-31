@@ -8,9 +8,10 @@ Mitsuo Shiota
 -   [Plot retail, wholesale gas and crude oil
     prices](#plot-retail-wholesale-gas-and-crude-oil-prices)
 -   [Plot price differences](#plot-price-differences)
--   [Dubai crude oil price](#dubai-crude-oil-price)
+-   [Dubai crude oil price (monthly)](#dubai-crude-oil-price-monthly)
+-   [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
 
-Updated: 2022-03-11
+Updated: 2022-03-31
 
 ## Summary
 
@@ -73,155 +74,53 @@ monopolistic power by consolidation.
 
 ![](README_files/figure-gfm/plot3-1.png)<!-- -->
 
-## Dubai crude oil price
-
-``` r
-library(tidyquant)
-```
-
-    ## Loading required package: PerformanceAnalytics
-
-    ## Loading required package: xts
-
-    ## Loading required package: zoo
-
-    ## 
-    ## Attaching package: 'zoo'
-
-    ## The following object is masked from 'package:tsibble':
-    ## 
-    ##     index
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     as.Date, as.Date.numeric
-
-    ## 
-    ## Attaching package: 'xts'
-
-    ## The following objects are masked from 'package:dplyr':
-    ## 
-    ##     first, last
-
-    ## 
-    ## Attaching package: 'PerformanceAnalytics'
-
-    ## The following object is masked from 'package:graphics':
-    ## 
-    ##     legend
-
-    ## Loading required package: quantmod
-
-    ## Loading required package: TTR
-
-    ## Registered S3 method overwritten by 'quantmod':
-    ##   method            from
-    ##   as.zoo.data.frame zoo
-
-    ## ══ Need to Learn tidyquant? ════════════════════════════════════════════════════
-    ## Business Science offers a 1-hour course - Learning Lab #9: Performance Analysis & Portfolio Optimization with tidyquant!
-    ## </> Learn more at: https://university.business-science.io/p/learning-labs-pro </>
-
-    ## 
-    ## Attaching package: 'tidyquant'
-
-    ## The following object is masked from 'package:fable':
-    ## 
-    ##     VAR
-
-``` r
-dub_oil <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "1990-01-01")
-```
-
-    ## Registered S3 method overwritten by 'tune':
-    ##   method                   from   
-    ##   required_pkgs.model_spec parsnip
-
-``` r
-dub_oil_month <- dub_oil %>% 
-  pivot_wider(names_from = symbol, values_from = price) %>% 
-  mutate(dub_oil_price = POILDUBUSDM * EXJPUS / 158.99) %>% 
-  select(date, dub_oil_price) %>% 
-  mutate(month = yearmonth(date)) %>% 
-  as_tsibble(index = month) %>% 
-  select(-date)
-```
+## Dubai crude oil price (monthly)
 
 Import prices pretty precisely follow Dubai crude oil spot prices of one
 month ago.
 
-``` r
-dub_import <- dub_oil_month %>% 
-  inner_join(import_price, by = "month") %>% 
-  rename(import_price = crude_oil_price) %>% 
-  filter(!is.na(dub_oil_price), !is.na(import_price))
-
-dub_import %>% 
-  pivot_longer(c(import_price, dub_oil_price)) %>% 
-  autoplot(value)
-```
-
-![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
-
-``` r
-dub_import %>% 
-  mutate(lag_dub = lag(dub_oil_price)) %>% 
-  select(-dub_oil_price) %>% 
-  pivot_longer(c(import_price, lag_dub)) %>% 
-  autoplot(value)
-```
+![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
     ## Warning: Removed 1 row(s) containing missing values (geom_path).
 
-![](README_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
-
-``` r
-p0 <- dub_import %>% 
-  ggplot(aes(dub_oil_price, import_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p1 <- dub_import %>% 
-  ggplot(aes(lag(dub_oil_price, 1), import_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p2 <- dub_import %>% 
-  ggplot(aes(lag(dub_oil_price, 2), import_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p0 | p1 | p2
-```
+![](README_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->
 
     ## Warning: Removed 1 rows containing missing values (geom_point).
 
     ## Warning: Removed 2 rows containing missing values (geom_point).
 
-![](README_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-1-3.png)<!-- -->
 
-``` r
-length(dub_import$dub_oil_price)
-```
+Correlations are 0.967359 if 0 month lag from Dubai to Japan customs,
+0.9973712 if 1 month lag, and 0.9743748 if 2 months lag.
 
-    ## [1] 251
+## Dubai crude oil price (weekly)
 
-``` r
-cor(dub_import$dub_oil_price, dub_import$import_price) # 0.967
-```
+I get daily data from
+[oilprice.com](https://oilprice.com/jp/%E5%8E%9F%E6%B2%B9%E4%BE%A1%E6%A0%BC%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88).
 
-    ## [1] 0.967359
+[METI publishes](https://nenryo-gekihenkanwa.jp/pdf/result_rev8.pdf)
+Dubai crude oil prices, counterfactual gasoline prices without
+subsidies, actual gasoline prieces and effects of subsidies, which are
+differences between counterfacual and actual, all in the units of yen /
+litre every week.
 
-``` r
-cor(dub_import$dub_oil_price[-251], dub_import$import_price[-1]) # 0.997
-```
+Weekly prices are not so different between oilprice.com and METI.
 
-    ## [1] 0.9973712
+![](README_files/figure-gfm/dubai_chart-1.png)<!-- -->
 
-``` r
-cor(dub_import$dub_oil_price[c(-250, -251)], dub_import$import_price[c(-1, -2)]) # 0.974
-```
+So I create weekly prices data by combining oilprice.com in 2021 and
+METI in 2022.
 
-    ## [1] 0.9743748
+METI calculates subsidy effects on retail prices by assuming 2 weeks lag
+between Dubai crude oil prices and retail gasoline prices. If we assume
+3 weeks lag instead, subsidy effects are smaller. In either case,
+effects are smaller than subsidies. It means that subsidies are not full
+reflected in retail prices, and that wholesalers and/or retailers are
+getting benefits from subsidies.
+
+![](README_files/figure-gfm/actual_counterfactual-1.png)<!-- -->
+
+![](README_files/figure-gfm/subsidy_effect-1.png)<!-- -->
 
 EOL
