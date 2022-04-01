@@ -144,9 +144,9 @@ effects are smaller. When effects are smaller than subsidies, subsidies
 are not fully reflected in retail prices, and wholesalers and/or
 retailers are getting benefits from subsidies.
 
-    ## Warning: Removed 1 row(s) containing missing values (geom_path).
-
 ![](README_files/figure-gfm/actual_counterfactual-1.png)<!-- -->
+
+    ## Warning: Removed 1 rows containing missing values (geom_col).
 
 ![](README_files/figure-gfm/subsidy_effect-1.png)<!-- -->
 
@@ -158,9 +158,9 @@ Lag 2 assumes 110.8, and it is close to the most recent monthly margin
 110.99 at 2021 Nov. Let us assume this margin over all lags between
 Dubai crude oil prices and retail prices.
 
-    ## Warning: Removed 1 row(s) containing missing values (geom_path).
-
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
+
+    ## Warning: Removed 1 rows containing missing values (geom_col).
 
 ![](README_files/figure-gfm/subsidy_effect2-1.png)<!-- -->
 

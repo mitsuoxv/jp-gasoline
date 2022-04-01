@@ -537,7 +537,6 @@ retail_price_weekly <- retail_price %>%
     ) %>% 
   select(week, actual = price) %>% 
   left_join(dubai_weekly2, by = "week") %>% 
-  filter(!is.na(dubai)) %>% 
   left_join(meti_subsidy, by = "week")
 
 effect_by_lag <- function(lag) {
@@ -548,9 +547,11 @@ effect_by_lag <- function(lag) {
         dubai_lag_n[week == yearweek("2022 W04")],
       counterfactual_wo_subsidy = dubai_lag_n + diff_retail_crude,
       effect_by_subsidy = counterfactual_wo_subsidy - actual,
-      counterfactual_with_subsidy = counterfactual_wo_subsidy - lag(subsidy, 2)
+      subsidy_lag = lag(subsidy, 2),
+      subsidy_lag = replace_na(subsidy_lag, 0),
+      counterfactual_with_subsidy = counterfactual_wo_subsidy - subsidy_lag
       ) %>% 
-    filter(week >= yearweek("2022 W04"))
+    filter(week >= yearweek("2022 W02"))
 }
 
 effects <- map_dfr(0:5, effect_by_lag, .id = "lag") %>% 
@@ -600,6 +601,7 @@ effects %>%
                   effect_by_subsidy = "Effect",
                   subsidy = "Subsidy")
   ) %>% 
+  filter(week >= yearweek("2022 W05")) %>% 
   ggplot(aes(week, value, fill = name)) +
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
@@ -638,9 +640,11 @@ effect_by_lag2 <- function(lag) {
       diff_retail_crude = normal_margin[3],
       counterfactual_wo_subsidy = dubai_lag_n + diff_retail_crude,
       effect_by_subsidy = counterfactual_wo_subsidy - actual,
-      counterfactual_with_subsidy = counterfactual_wo_subsidy - lag(subsidy, 2)
+            subsidy_lag = lag(subsidy, 2),
+      subsidy_lag = replace_na(subsidy_lag, 0),
+      counterfactual_with_subsidy = counterfactual_wo_subsidy - subsidy_lag
       ) %>% 
-    filter(week >= yearweek("2022 W04"))
+    filter(week >= yearweek("2022 W02"))
 }
 
 effects2 <- map_dfr(0:5, effect_by_lag2, .id = "lag") %>% 
@@ -674,18 +678,13 @@ effects2 %>%
 ```{r subsidy_effect2}
 
 effects2 %>% 
-  group_by(lag) %>% 
-  mutate(
-    subsidy = lag(subsidy, 2),
-    subsidy = replace_na(subsidy, 0)
-  ) %>% 
-  ungroup() %>% 
-  pivot_longer(c(subsidy, effect_by_subsidy)) %>% 
+  pivot_longer(c(subsidy_lag, effect_by_subsidy)) %>% 
   mutate(
     name = recode(name,
                   effect_by_subsidy = "Effect",
-                  subsidy = "Subsidy")
+                  subsidy_lag = "Subsidy")
   ) %>% 
+  filter(week >= yearweek("2022 W05")) %>% 
   ggplot(aes(week, value, fill = name)) +
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
