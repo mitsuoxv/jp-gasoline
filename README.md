@@ -9,6 +9,9 @@ Mitsuo Shiota
     prices](#plot-retail-wholesale-gas-and-crude-oil-prices)
 -   [Plot price differences](#plot-price-differences)
 -   [Dubai crude oil price (monthly)](#dubai-crude-oil-price-monthly)
+    -   [vs Japan customs import price](#vs-japan-customs-import-price)
+    -   [vs wholesale gasoline price](#vs-wholesale-gasoline-price)
+    -   [vs retail gasoline price](#vs-retail-gasoline-price)
 -   [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
 
 Updated: 2022-04-01
@@ -76,42 +79,46 @@ monopolistic power by consolidation.
 
 ## Dubai crude oil price (monthly)
 
+### vs Japan customs import price
+
 Import prices pretty precisely follow Dubai crude oil spot prices of one
 month ago.
-
-![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
-
-    ## Warning: Removed 1 row(s) containing missing values (geom_path).
-
-![](README_files/figure-gfm/unnamed-chunk-1-2.png)<!-- -->
 
     ## Warning: Removed 1 rows containing missing values (geom_point).
 
     ## Warning: Removed 2 rows containing missing values (geom_point).
 
-![](README_files/figure-gfm/unnamed-chunk-1-3.png)<!-- -->
+![](README_files/figure-gfm/dub_import-1.png)<!-- -->
 
 Correlations are 0.9674 if 0 month lag from Dubai to Japan customs,
 0.9974 if 1 month lag, and 0.9744 if 2 months lag.
 
-![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
-
-    ## Warning: Removed 1 row(s) containing missing values (geom_path).
-
-![](README_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+### vs wholesale gasoline price
 
     ## Warning: Removed 1 rows containing missing values (geom_point).
 
     ## Warning: Removed 2 rows containing missing values (geom_point).
 
-![](README_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
+![](README_files/figure-gfm/dub_wholesale-1.png)<!-- -->
+
+Wholesale prices follow Dubai crude oil prices of one month ago.
+Correlations are 0.97 if 0 month lag from Dubai to wholesalers, 0.9822
+if 1 month lag, and 0.9481 if 2 months lag.
+
+### vs retail gasoline price
+
+    ## Warning: Removed 1 rows containing missing values (geom_point).
+
+    ## Warning: Removed 2 rows containing missing values (geom_point).
+
+![](README_files/figure-gfm/dub_retail-1.png)<!-- -->
 
 Retail prices (including constant 10 percent consumption tax) also
 follow Dubai crude oil prices of one month ago. Correlations are 0.9393
 if 0 month lag from Dubai to Japan customs, 0.9642 if 1 month lag, and
 0.9406 if 2 months lag.
 
-![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](README_files/figure-gfm/dub_import_retail_diff-1.png)<!-- -->
 
 The most recent difference between retail price (including constant 10
 percenttax) and one month ago Dubai crude oil price is 110.99 at 2021
@@ -170,9 +177,14 @@ of subsidies than the previous plots.
 
 From this analysis, it is clear that the assumption on lag and normal
 margin between Dubai crude oil prices and retail gasoline prices is very
-important to calculate the effects by subsidies. METI assumes lag 2
-weeks and normal margin 110.8 yen per litre. I hope I will find out
-whether METI’s assumption is reasonable or not, while I update this
-page.
+important to calculate the effects by subsidies. METI assumes lag of 2
+weeks from Dubai to retailers (0 week from Dubai to wholesalers and 2
+weeks from wholesalers to retailers), and normal margin 110.8 yen per
+litre between Dubai and retail prices. However, the monthly data
+analysis in the previous chapter suggests that there usually is one
+month lag from Dubai to retailers, and that 110.8 yen per litre gap
+between Dubai and retail prices is historically large. I hope I will
+find out whether METI’s assumption is reasonable or not, while I update
+this page.
 
 EOL
