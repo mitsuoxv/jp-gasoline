@@ -11,7 +11,7 @@ Mitsuo Shiota
 -   [Dubai crude oil price (monthly)](#dubai-crude-oil-price-monthly)
 -   [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
 
-Updated: 2022-03-31
+Updated: 2022-04-01
 
 ## Summary
 
@@ -91,8 +91,31 @@ month ago.
 
 ![](README_files/figure-gfm/unnamed-chunk-1-3.png)<!-- -->
 
-Correlations are 0.967359 if 0 month lag from Dubai to Japan customs,
-0.9973712 if 1 month lag, and 0.9743748 if 2 months lag.
+Correlations are 0.9674 if 0 month lag from Dubai to Japan customs,
+0.9974 if 1 month lag, and 0.9744 if 2 months lag.
+
+![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+    ## Warning: Removed 1 row(s) containing missing values (geom_path).
+
+![](README_files/figure-gfm/unnamed-chunk-2-2.png)<!-- -->
+
+    ## Warning: Removed 1 rows containing missing values (geom_point).
+
+    ## Warning: Removed 2 rows containing missing values (geom_point).
+
+![](README_files/figure-gfm/unnamed-chunk-2-3.png)<!-- -->
+
+Retail prices (including constant 10 percent consumption tax) also
+follow Dubai crude oil prices of one month ago. Correlations are 0.9393
+if 0 month lag from Dubai to Japan customs, 0.9642 if 1 month lag, and
+0.9406 if 2 months lag.
+
+![](README_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+The most recent difference between retail price (including constant 10
+percenttax) and one month ago Dubai crude oil price is 110.99 at 2021
+Nov
 
 ## Dubai crude oil price (weekly)
 
@@ -112,15 +135,44 @@ Weekly prices are not so different between oilprice.com and METI.
 So I create weekly prices data by combining oilprice.com in 2021 and
 METI in 2022.
 
-METI calculates subsidy effects on retail prices by assuming 2 weeks lag
-between Dubai crude oil prices and retail gasoline prices. If we assume
-3 weeks lag instead, subsidy effects are smaller. In either case,
-effects are smaller than subsidies. It means that subsidies are not full
-reflected in retail prices, and that wholesalers and/or retailers are
-getting benefits from subsidies.
+METI calculates subsidy effects on retail prices by assuming that retail
+prices will reflect subsidies 2 weeks later.
+
+METI also assumes that there is 2 weeks lag between Dubai crude oil
+prices and retail prices. If we assume 3 weeks lag instead, subsidy
+effects are smaller. When effects are smaller than subsidies, subsidies
+are not fully reflected in retail prices, and wholesalers and/or
+retailers are getting benefits from subsidies.
+
+    ## Warning: Removed 1 row(s) containing missing values (geom_path).
 
 ![](README_files/figure-gfm/actual_counterfactual-1.png)<!-- -->
 
 ![](README_files/figure-gfm/subsidy_effect-1.png)<!-- -->
+
+Above calculation assumes there is a constant margin between Dubai crude
+oil prices and retail prices. Lag 0 to 5 assumes margins 107.3, 107.6,
+110.8, 112.4, 118.5, 118.5 respectively.
+
+Lag 2 assumes 110.8, and it is close to the most recent monthly margin
+110.99 at 2021 Nov. Let us assume this margin over all lags between
+Dubai crude oil prices and retail prices.
+
+    ## Warning: Removed 1 row(s) containing missing values (geom_path).
+
+![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
+
+![](README_files/figure-gfm/subsidy_effect2-1.png)<!-- -->
+
+As I assume fixed margin based on lag 2 assumption, lag 2 does not
+change from the previous plots. In lags 3 to 5, there are less effects
+of subsidies than the previous plots.
+
+From this analysis, it is clear that the assumption on lag and normal
+margin between Dubai crude oil prices and retail gasoline prices is very
+important to calculate the effects by subsidies. METI assumes lag 2
+weeks and normal margin 110.8 yen per litre. I hope I will find out
+whether METI’s assumption is reasonable or not, while I update this
+page.
 
 EOL

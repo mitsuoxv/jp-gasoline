@@ -315,7 +315,68 @@ p0 | p1 | p2
 
 ```
 
-Correlations are `r cor(dub_import$dub_oil_price, dub_import$import_price)` if 0 month lag from Dubai to Japan customs, `r cor(dub_import$dub_oil_price[-251], dub_import$import_price[-1])` if 1 month lag, and `r cor(dub_import$dub_oil_price[c(-250, -251)], dub_import$import_price[c(-1, -2)])` if 2 months lag.
+Correlations are `r cor(dub_import$dub_oil_price, dub_import$import_price) %>% round(4)` if 0 month lag from Dubai to Japan customs, `r cor(dub_import$dub_oil_price[-251], dub_import$import_price[-1]) %>% round(4)` if 1 month lag, and `r cor(dub_import$dub_oil_price[c(-250, -251)], dub_import$import_price[c(-1, -2)]) %>% round(4)` if 2 months lag.
+
+```{r}
+
+dub_import_retail <- retail_price_month %>% 
+  mutate(retail_price = 1.1 * retail_price) %>% # include 10 percent consumption tax
+  inner_join(dub_oil_month, by = "month") %>% 
+  filter(!is.na(dub_oil_price), !is.na(retail_price)) %>% 
+  filter(month >= yearmonth("2001 Jan"))
+
+dub_import_retail %>% 
+  pivot_longer(c(retail_price, dub_oil_price)) %>% 
+  autoplot(value)
+
+dub_import_retail %>% 
+  mutate(lag_dub = lag(dub_oil_price)) %>% 
+  select(-dub_oil_price) %>% 
+  pivot_longer(c(retail_price, lag_dub)) %>% 
+  autoplot(value)
+
+p0r <- dub_import_retail %>% 
+  ggplot(aes(dub_oil_price, retail_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p1r <- dub_import_retail %>% 
+  ggplot(aes(lag(dub_oil_price, 1), retail_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p2r <- dub_import_retail %>% 
+  ggplot(aes(lag(dub_oil_price, 2), retail_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p0r | p1r | p2r
+
+```
+
+Retail prices (including constant 10 percent consumption tax) also follow Dubai crude oil prices of one month ago. Correlations are `r cor(dub_import_retail$dub_oil_price, dub_import_retail$retail_price) %>% round(4)` if 0 month lag from Dubai to Japan customs, `r cor(dub_import_retail$dub_oil_price[-251], dub_import_retail$retail_price[-1]) %>% round(4)` if 1 month lag, and `r cor(dub_import_retail$dub_oil_price[c(-250, -251)], dub_import_retail$retail_price[c(-1, -2)]) %>% round(4)` if 2 months lag.
+
+
+```{r}
+
+dub_import_retail_diff <- dub_import_retail %>% 
+  mutate(
+    dub_oil_price_lag = lag(dub_oil_price),
+    diff = retail_price - dub_oil_price_lag
+  ) %>% 
+  filter(!is.na(diff))
+
+dub_import_retail_diff %>% 
+  autoplot(diff) +
+  geom_text(aes(label = round(diff, 0)), 
+            vjust = 0, hjust = 0,
+            data = dub_import_retail_diff %>% tail(1)) +
+  labs(y = "Yen per litre",
+       title = "Difference between retail price (including constant 10 percent\nconsumption tax) and one month ago Dubai crude oil price")
+
+```
+
+The most recent difference between retail price (including constant 10 percent\nconsumption tax) and one month ago Dubai crude oil price is `r dub_import_retail_diff %>% tail(1) %>% pull(diff) %>% round(2)` at `r dub_import_retail_diff %>% tail(1) %>% pull(month) %>% as.character()`
 
 ## Dubai crude oil price (weekly)
 
@@ -470,7 +531,10 @@ dubai_weekly2 <- dubai_weekly %>%
   rename(dubai = price)
 
 retail_price_weekly <- retail_price %>% 
-  mutate(week = yearweek(date)) %>% 
+  mutate(
+    week = yearweek(date),
+    price = 1.1 * price_excl_tax # include constant 10 percent consumption tax
+    ) %>% 
   select(week, actual = price) %>% 
   left_join(dubai_weekly2, by = "week") %>% 
   filter(!is.na(dubai)) %>% 
@@ -483,13 +547,13 @@ effect_by_lag <- function(lag) {
       diff_retail_crude = actual[week == yearweek("2022 W04")] - 
         dubai_lag_n[week == yearweek("2022 W04")],
       counterfactual_wo_subsidy = dubai_lag_n + diff_retail_crude,
-      effect_by_subsidy = counterfactual_wo_subsidy - actual
-    ) %>% 
-    mutate(counterfactual_with_subsidy = counterfactual_wo_subsidy - subsidy) %>% 
+      effect_by_subsidy = counterfactual_wo_subsidy - actual,
+      counterfactual_with_subsidy = counterfactual_wo_subsidy - lag(subsidy, 2)
+      ) %>% 
     filter(week >= yearweek("2022 W04"))
 }
 
-effects <- map_dfr(0:4, effect_by_lag, .id = "lag") %>% 
+effects <- map_dfr(0:5, effect_by_lag, .id = "lag") %>% 
   mutate(
     lag = as.numeric(lag),
     lag = lag - 1
@@ -497,7 +561,9 @@ effects <- map_dfr(0:4, effect_by_lag, .id = "lag") %>%
 
 ```
 
-METI calculates subsidy effects on retail prices by assuming 2 weeks lag between Dubai crude oil prices and retail gasoline prices. If we assume 3 weeks lag instead, subsidy effects are smaller. In either case, effects are smaller than subsidies. It means that subsidies are not full reflected in retail prices, and that wholesalers and/or retailers are getting benefits from subsidies.
+METI calculates subsidy effects on retail prices by assuming that retail prices will reflect subsidies 2 weeks later.
+
+METI also assumes that there is 2 weeks lag between Dubai crude oil prices and retail prices. If we assume 3 weeks lag instead, subsidy effects are smaller. When effects are smaller than subsidies, subsidies are not fully reflected in retail prices, and wholesalers and/or retailers are getting benefits from subsidies.
 
 ```{r actual_counterfactual}
 
@@ -522,6 +588,12 @@ effects %>%
 ```{r subsidy_effect}
 
 effects %>% 
+  group_by(lag) %>% 
+  mutate(
+    subsidy = lag(subsidy, 2),
+    subsidy = replace_na(subsidy, 0)
+  ) %>% 
+  ungroup() %>% 
   pivot_longer(c(subsidy, effect_by_subsidy)) %>% 
   mutate(
     name = recode(name,
@@ -538,5 +610,94 @@ effects %>%
 
 ```
 
+
+```{r normal_margin}
+
+normal_margin <- retail_price_weekly %>% 
+  mutate(
+    normal_diff = actual[week == yearweek("2022 W04")] - dubai
+    ) %>% 
+  filter(week >= yearweek("2021 W50"),
+         week <= yearweek("2022 W04")) %>% 
+  pull(normal_diff) %>% 
+  rev()
+
+```
+
+Above calculation assumes there is a constant margin between Dubai crude oil prices and retail prices. Lag 0 to 5 assumes margins `r normal_margin %>% round(1)` respectively.
+
+Lag 2 assumes `r normal_margin[3] %>% round(1)`, and it is close to the most recent monthly margin `r dub_import_retail_diff %>% tail(1) %>% pull(diff) %>% round(2)` at `r dub_import_retail_diff %>% tail(1) %>% pull(month) %>% as.character()`. Let us assume this margin over all lags between Dubai crude oil prices and retail prices.
+
+
+```{r effect_by_lag2}
+
+effect_by_lag2 <- function(lag) {
+  retail_price_weekly %>% 
+    mutate(
+      dubai_lag_n = lag(dubai, lag),
+      diff_retail_crude = normal_margin[3],
+      counterfactual_wo_subsidy = dubai_lag_n + diff_retail_crude,
+      effect_by_subsidy = counterfactual_wo_subsidy - actual,
+      counterfactual_with_subsidy = counterfactual_wo_subsidy - lag(subsidy, 2)
+      ) %>% 
+    filter(week >= yearweek("2022 W04"))
+}
+
+effects2 <- map_dfr(0:5, effect_by_lag2, .id = "lag") %>% 
+  mutate(
+    lag = as.numeric(lag),
+    lag = lag - 1
+  )
+```
+
+
+```{r actual_counterfactual2}
+
+effects2 %>% 
+  pivot_longer(c(actual, counterfactual_with_subsidy, counterfactual_wo_subsidy)) %>% 
+  mutate(
+    name = recode(name,
+                  actual = "Actual prices",
+                  counterfactual_wo_subsidy = "Counterfactual prices\nif no subsidy",
+                  counterfactual_with_subsidy = "Prices if subsidies are\nfully reflected")
+  ) %>% 
+  ggplot(aes(week, value, color = name)) +
+  geom_line() +
+  scale_x_yearweek(date_labels = "%b", date_breaks = "1 month") +
+  facet_wrap(vars(lag)) +
+  labs(x = NULL, y = "Yen per litre", color = NULL,
+       title = "Actual and counterfactual retail prices\nby # of week lags from Dubai to retail\nassuming fixed margin across all lags")
+
+```
+
+
+```{r subsidy_effect2}
+
+effects2 %>% 
+  group_by(lag) %>% 
+  mutate(
+    subsidy = lag(subsidy, 2),
+    subsidy = replace_na(subsidy, 0)
+  ) %>% 
+  ungroup() %>% 
+  pivot_longer(c(subsidy, effect_by_subsidy)) %>% 
+  mutate(
+    name = recode(name,
+                  effect_by_subsidy = "Effect",
+                  subsidy = "Subsidy")
+  ) %>% 
+  ggplot(aes(week, value, fill = name)) +
+  geom_col(position = "identity", alpha = 0.5) +
+  scale_fill_manual(values = c("red", "blue")) +
+  scale_x_yearweek(date_labels = "%b", date_breaks = "1 month") +
+  facet_wrap(vars(lag)) +
+  labs(x = NULL, y = "Yen per litre", fill = NULL,
+       title = "Effect of subsidies by # of week lags from Dubai to retail\nassuming fixed margin across all lags")
+
+```
+
+As I assume fixed margin based on lag 2 assumption, lag 2 does not change from the previous plots. In lags 3 to 5, there are less effects of subsidies than the previous plots.
+
+From this analysis, it is clear that the assumption on lag and normal margin between Dubai crude oil prices and retail gasoline prices is very important to calculate the effects by subsidies. METI assumes lag 2 weeks and normal margin `r normal_margin[3] %>% round(1)` yen per litre. I hope I will find out whether METI's assumption is reasonable or not, while I update this page.
 
 EOL
