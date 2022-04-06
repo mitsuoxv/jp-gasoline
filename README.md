@@ -14,7 +14,7 @@ Mitsuo Shiota
     -   [vs retail gasoline price](#vs-retail-gasoline-price)
 -   [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
 
-Updated: 2022-04-01
+Updated: 2022-04-06
 
 ## Summary
 
@@ -56,11 +56,18 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
+![](README_files/figure-gfm/wholesale_vs_crude-1.png)<!-- -->
+
+Correlations are 0.9718 if wholesales lead Japan customs by 1 month,
+0.9806 if wholesales is concurrent with Japan customs, and 0.9458 if
+wholesales lag Japan customs by 1 month. The highest correlation is if
+wholesales is concurrent with Japan customs.
+
 ## Plot price differences
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 18 in 2022 Jan. This may reflect the reduced
+2015 Dec, and is 18 in 2022 Feb. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -71,11 +78,23 @@ from Agency for National Resources Energy.
 
 Differences between wholesale price and imported crude oil price plus
 gasoline tax have also been increasing. The average difference was 16
-yen per litre from 2001 Jan to 2014 Dec, and is 16 in 2021 Dec. This may
+yen per litre from 2001 Jan to 2014 Dec, and is 23 in 2022 Jan. This may
 reflect the reduced competition among wholesalers, who have got
 monopolistic power by consolidation.
 
 ![](README_files/figure-gfm/plot3-1.png)<!-- -->
+
+It was 22 in 2022 Feb, and failed to drop as much as 5 yen per litre
+subsidy.
+
+    ## # A tsibble: 5 x 2 [1M]
+    ##      month value
+    ##      <mth> <dbl>
+    ## 1 2021 Oct  25.6
+    ## 2 2021 Nov  22.6
+    ## 3 2021 Dec  16.3
+    ## 4 2022 Jan  23.0
+    ## 5 2022 Feb  22.3
 
 ## Dubai crude oil price (monthly)
 
@@ -91,7 +110,8 @@ month ago.
 ![](README_files/figure-gfm/dub_import-1.png)<!-- -->
 
 Correlations are 0.9674 if 0 month lag from Dubai to Japan customs,
-0.9974 if 1 month lag, and 0.9744 if 2 months lag.
+0.9974 if 1 month lag, and 0.9744 if 2 months lag. The highest
+correlation is if Japan customs lag Dubai by 1 month.
 
 ### vs wholesale gasoline price
 
@@ -103,7 +123,8 @@ Correlations are 0.9674 if 0 month lag from Dubai to Japan customs,
 
 Wholesale prices follow Dubai crude oil prices of one month ago.
 Correlations are 0.97 if 0 month lag from Dubai to wholesalers, 0.9822
-if 1 month lag, and 0.9481 if 2 months lag.
+if 1 month lag, and 0.9481 if 2 months lag. The highest correlation is
+if wholesales lag Dubai by 1 month.
 
 ### vs retail gasoline price
 
@@ -116,7 +137,8 @@ if 1 month lag, and 0.9481 if 2 months lag.
 Retail prices (including constant 10 percent consumption tax) also
 follow Dubai crude oil prices of one month ago. Correlations are 0.9393
 if 0 month lag from Dubai to Japan customs, 0.9642 if 1 month lag, and
-0.9406 if 2 months lag.
+0.9406 if 2 months lag. The highest correlation is if retails lag Dubai
+by 1 month.
 
 ![](README_files/figure-gfm/dub_import_retail_diff-1.png)<!-- -->
 
@@ -162,8 +184,8 @@ oil prices and retail prices. Lag 0 to 5 assumes margins 107.3, 107.6,
 110.8, 112.4, 118.5, 118.5 respectively.
 
 Lag 2 assumes 110.8, and it is close to the most recent monthly margin
-110.99 at 2021 Nov. Let us assume this margin over all lags between
-Dubai crude oil prices and retail prices.
+110.99 at 2021 Nov. Let us assume this margin of 110.8 over all lags
+between Dubai crude oil prices and retail prices.
 
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
 
