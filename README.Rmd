@@ -350,7 +350,7 @@ dub_oil_month <- dub_oil %>%
   select(-date)
 ```
 
-```{r dub_import}
+```{r dub_import, warning=FALSE}
 
 dub_import <- dub_oil_month %>% 
   inner_join(import_price, by = "month") %>% 
@@ -380,7 +380,7 @@ Correlations are `r cor(dub_import$dub_oil_price, dub_import$import_price) %>% r
 
 ### vs wholesale gasoline price
 
-```{r dub_wholesale}
+```{r dub_wholesale, warning=FALSE}
 
 dub_import_wholesale <- wholesale_price %>% 
   inner_join(dub_oil_month, by = "month") %>% 
@@ -410,7 +410,7 @@ Wholesale prices follow Dubai crude oil prices of one month ago. Correlations ar
 
 ### vs retail gasoline price
 
-```{r dub_retail}
+```{r dub_retail, warning=FALSE}
 
 dub_import_retail <- retail_price_month %>% 
   mutate(retail_price = 1.1 * retail_price) %>% # include 10 percent consumption tax
@@ -646,9 +646,11 @@ effects <- map_dfr(0:5, effect_by_lag, .id = "lag") %>%
 
 ```
 
-METI calculates subsidy effects on retail prices by assuming that retail prices will reflect subsidies 2 weeks later.
+METI calculates subsidy effects on retail prices by assuming that retail prices will reflect subsidies 2 weeks later. I have no reason to disagree.
 
-METI also assumes that there is 2 weeks lag between Dubai crude oil prices and retail prices. If we assume 3 weeks lag instead, subsidy effects are smaller. When effects are smaller than subsidies, subsidies are not fully reflected in retail prices, and wholesalers and/or retailers are getting benefits from subsidies.
+METI also assumes that there is 2 weeks lag between Dubai crude oil prices and retail prices (0 week from Dubai to wholesalers and 2 weeks from wholesalers to retailers). I disagree. In the physical terms, it is impossible to carry oil from Dubai to retailers in Japan in 2 weeks. In the accounting terms, all major wholesalers evaluate stocks by average method, not by LIFO (Last In First Out). In the past observations from the monthly data, wholesale prices usually lag Dubai crude oil prices by 1 month.
+
+If we assume 3 weeks lag instead, subsidy effects are smaller. When effects are smaller than subsidies, subsidies are not fully reflected in retail prices, and wholesalers and/or retailers are getting benefits from subsidies.
 
 ```{r actual_counterfactual}
 
@@ -662,15 +664,14 @@ effects %>%
   ) %>% 
   ggplot(aes(week, value, color = name)) +
   geom_line() +
-  scale_x_yearweek(date_labels = "%b", date_breaks = "1 month") +
+  scale_x_yearweek(date_labels = "%m/\n%d") +
   facet_wrap(vars(lag)) +
   labs(x = NULL, y = "Yen per litre", color = NULL,
        title = "Actual and counterfactual retail prices\nby # of week lags from Dubai to retail")
 
 ```
 
-
-```{r subsidy_effect}
+```{r subsidy_effect, warning=FALSE}
 
 effects %>% 
   group_by(lag) %>% 
@@ -689,7 +690,7 @@ effects %>%
   ggplot(aes(week, value, fill = name)) +
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
-  scale_x_yearweek(date_labels = "%b", date_breaks = "1 month") +
+  scale_x_yearweek(date_labels = "%m/\n%d") +
   facet_wrap(vars(lag)) +
   labs(x = NULL, y = "Yen per litre", fill = NULL,
        title = "Effect of subsidies by # of week lags from Dubai to retail")
@@ -738,7 +739,6 @@ effects2 <- map_dfr(0:5, effect_by_lag2, .id = "lag") %>%
   )
 ```
 
-
 ```{r actual_counterfactual2}
 
 effects2 %>% 
@@ -751,15 +751,14 @@ effects2 %>%
   ) %>% 
   ggplot(aes(week, value, color = name)) +
   geom_line() +
-  scale_x_yearweek(date_labels = "%b", date_breaks = "1 month") +
+  scale_x_yearweek(date_labels = "%m/\n%d") +
   facet_wrap(vars(lag)) +
   labs(x = NULL, y = "Yen per litre", color = NULL,
        title = "Actual and counterfactual retail prices\nby # of week lags from Dubai to retail\nassuming fixed margin across all lags")
 
 ```
 
-
-```{r subsidy_effect2}
+```{r subsidy_effect2, warning=FALSE}
 
 effects2 %>% 
   pivot_longer(c(subsidy_lag, effect_by_subsidy)) %>% 
@@ -772,7 +771,7 @@ effects2 %>%
   ggplot(aes(week, value, fill = name)) +
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
-  scale_x_yearweek(date_labels = "%b", date_breaks = "1 month") +
+  scale_x_yearweek(date_labels = "%m/\n%d") +
   facet_wrap(vars(lag)) +
   labs(x = NULL, y = "Yen per litre", fill = NULL,
        title = "Effect of subsidies by # of week lags from Dubai to retail\nassuming fixed margin across all lags")
@@ -782,5 +781,69 @@ effects2 %>%
 As I assume fixed margin based on lag 2 assumption, lag 2 does not change from the previous plots. In lags 3 to 5, there are less effects of subsidies than the previous plots.
 
 From this analysis, it is clear that the assumption on lag and normal margin between Dubai crude oil prices and retail gasoline prices is very important to calculate the effects by subsidies. METI assumes lag of 2 weeks from Dubai to retailers (0 week from Dubai to wholesalers and 2 weeks from wholesalers to retailers), and normal margin `r normal_margin[3] %>% round(1)` yen per litre between Dubai and retail prices. However, the monthly data analysis in the previous chapter suggests that there usually is one month lag from Dubai to retailers, and that `r normal_margin[3] %>% round(1)` yen per litre gap between Dubai and retail prices is historically large. I hope I will find out whether METI's assumption is reasonable or not, while I update this page.
+
+## Minor change of METI's effects calculation from March 14, 2022
+
+METI changed calculation method from March 14, 2022. The new method is:
+
+1. Reset the last week counterfactual retail price without subsidy to the last week actual retail price plus subsidy.
+
+2. Add Dubai crude oil price change from the last week to this week to it, and you will get this week counterfactual retail price without subsidy.
+
+I think this is a minor change, as METI basically continues to assume that retail prices will reflect subsidies 2 weeks later, and that there is 2 weeks lag between Dubai crude oil prices and retail prices. 
+
+```{r}
+
+effects_lag2 <- effects %>% 
+  filter(lag == 2) %>%
+  mutate(
+    subsidy = lag(subsidy, 2),
+    subsidy = replace_na(subsidy, 0)
+  )
+
+p_old <- effects_lag2 %>% 
+  pivot_longer(c(subsidy, effect_by_subsidy)) %>% 
+  mutate(
+    name = recode(name,
+                  effect_by_subsidy = "Effect",
+                  subsidy = "Subsidy")
+  ) %>% 
+  filter(week >= yearweek("2022 W11")) %>% 
+  ggplot(aes(week, value, fill = name)) +
+  geom_col(position = "identity", alpha = 0.5) +
+  scale_fill_manual(values = c("red", "blue")) +
+  scale_x_yearweek(date_labels = "%m/\n%d") +
+  ylim(0, 30) +
+  labs(x = NULL, y = "Yen per litre", fill = NULL,
+       title = "Old method = lag 2") +
+  theme(legend.position = "none")
+
+# from METI, small disconnect of Dubai in 2022 W08
+effects_lag2[effects_lag2$week == yearweek("2022 W08"), "dubai"] <- 71.5
+
+p_new <- effects_lag2 %>% 
+  mutate(
+    reset_last_week = lag(actual + subsidy),
+    dubai_diff = lag(dubai - lag(dubai), 2),
+    effect = reset_last_week + dubai_diff - actual
+  ) %>% 
+  pivot_longer(c(subsidy, effect)) %>% 
+  mutate(
+    name = recode(name,
+                  effect = "Effect",
+                  subsidy = "Subsidy")
+  ) %>% 
+  filter(week >= yearweek("2022 W11")) %>% 
+  ggplot(aes(week, value, fill = name)) +
+  geom_col(position = "identity", alpha = 0.5) +
+  scale_fill_manual(values = c("red", "blue")) +
+  scale_x_yearweek(date_labels = "%m/\n%d") +
+  ylim(0, 30) +
+  labs(x = NULL, y = NULL, fill = NULL,
+       title = "New method")
+
+p_old | p_new
+
+```
 
 EOL

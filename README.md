@@ -13,8 +13,10 @@ Mitsuo Shiota
     -   [vs wholesale gasoline price](#vs-wholesale-gasoline-price)
     -   [vs retail gasoline price](#vs-retail-gasoline-price)
 -   [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
+-   [Minor change of METI’s effects calculation from March 14,
+    2022](#minor-change-of-metis-effects-calculation-from-march-14-2022)
 
-Updated: 2022-04-06
+Updated: 2022-04-07
 
 ## Summary
 
@@ -103,10 +105,6 @@ subsidy.
 Import prices pretty precisely follow Dubai crude oil spot prices of one
 month ago.
 
-    ## Warning: Removed 1 rows containing missing values (geom_point).
-
-    ## Warning: Removed 2 rows containing missing values (geom_point).
-
 ![](README_files/figure-gfm/dub_import-1.png)<!-- -->
 
 Correlations are 0.9674 if 0 month lag from Dubai to Japan customs,
@@ -114,10 +112,6 @@ Correlations are 0.9674 if 0 month lag from Dubai to Japan customs,
 correlation is if Japan customs lag Dubai by 1 month.
 
 ### vs wholesale gasoline price
-
-    ## Warning: Removed 1 rows containing missing values (geom_point).
-
-    ## Warning: Removed 2 rows containing missing values (geom_point).
 
 ![](README_files/figure-gfm/dub_wholesale-1.png)<!-- -->
 
@@ -127,10 +121,6 @@ if 1 month lag, and 0.9481 if 2 months lag. The highest correlation is
 if wholesales lag Dubai by 1 month.
 
 ### vs retail gasoline price
-
-    ## Warning: Removed 1 rows containing missing values (geom_point).
-
-    ## Warning: Removed 2 rows containing missing values (geom_point).
 
 ![](README_files/figure-gfm/dub_retail-1.png)<!-- -->
 
@@ -165,17 +155,24 @@ So I create weekly prices data by combining oilprice.com in 2021 and
 METI in 2022.
 
 METI calculates subsidy effects on retail prices by assuming that retail
-prices will reflect subsidies 2 weeks later.
+prices will reflect subsidies 2 weeks later. I have no reason to
+disagree.
 
 METI also assumes that there is 2 weeks lag between Dubai crude oil
-prices and retail prices. If we assume 3 weeks lag instead, subsidy
-effects are smaller. When effects are smaller than subsidies, subsidies
-are not fully reflected in retail prices, and wholesalers and/or
-retailers are getting benefits from subsidies.
+prices and retail prices (0 week from Dubai to wholesalers and 2 weeks
+from wholesalers to retailers). I disagree. In the physical terms, it is
+impossible to carry oil from Dubai to retailers in Japan in 2 weeks. In
+the accounting terms, all major wholesalers evaluate stocks by average
+method, not by LIFO (Last In First Out). In the past observations from
+the monthly data, wholesale prices usually lag Dubai crude oil prices by
+1 month.
+
+If we assume 3 weeks lag instead, subsidy effects are smaller. When
+effects are smaller than subsidies, subsidies are not fully reflected in
+retail prices, and wholesalers and/or retailers are getting benefits
+from subsidies.
 
 ![](README_files/figure-gfm/actual_counterfactual-1.png)<!-- -->
-
-    ## Warning: Removed 1 rows containing missing values (geom_col).
 
 ![](README_files/figure-gfm/subsidy_effect-1.png)<!-- -->
 
@@ -188,8 +185,6 @@ Lag 2 assumes 110.8, and it is close to the most recent monthly margin
 between Dubai crude oil prices and retail prices.
 
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
-
-    ## Warning: Removed 1 rows containing missing values (geom_col).
 
 ![](README_files/figure-gfm/subsidy_effect2-1.png)<!-- -->
 
@@ -208,5 +203,22 @@ month lag from Dubai to retailers, and that 110.8 yen per litre gap
 between Dubai and retail prices is historically large. I hope I will
 find out whether METI’s assumption is reasonable or not, while I update
 this page.
+
+## Minor change of METI’s effects calculation from March 14, 2022
+
+METI changed calculation method from March 14, 2022. The new method is:
+
+1.  Reset the last week counterfactual retail price without subsidy to
+    the last week actual retail price plus subsidy.
+
+2.  Add Dubai crude oil price change from the last week to this week to
+    it, and you will get this week counterfactual retail price without
+    subsidy.
+
+I think this is a minor change, as METI basically continues to assume
+that retail prices will reflect subsidies 2 weeks later, and that there
+is 2 weeks lag between Dubai crude oil prices and retail prices.
+
+![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
 EOL
