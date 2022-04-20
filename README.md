@@ -16,7 +16,7 @@ Mitsuo Shiota
 -   [Minor change of METI’s effects calculation from March 14,
     2022](#minor-change-of-metis-effects-calculation-from-march-14-2022)
 
-Updated: 2022-04-14
+Updated: 2022-04-20
 
 ## Summary
 
