@@ -16,7 +16,7 @@ Mitsuo Shiota
 -   [Minor change of METI’s effects calculation from March 14,
     2022](#minor-change-of-metis-effects-calculation-from-march-14-2022)
 
-Updated: 2022-04-20
+Updated: 2022-04-28
 
 ## Summary
 
@@ -60,8 +60,8 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/wholesale_vs_crude-1.png)<!-- -->
 
-Correlations are 0.9718 if wholesales lead Japan customs by 1 month,
-0.9806 if wholesales is concurrent with Japan customs, and 0.9458 if
+Correlations are 0.9721 if wholesales lead Japan customs by 1 month,
+0.9807 if wholesales is concurrent with Japan customs, and 0.946 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs.
 
@@ -69,7 +69,7 @@ wholesales is concurrent with Japan customs.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 18 in 2022 Feb. This may reflect the reduced
+2015 Dec, and is 19 in 2022 Mar. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -87,16 +87,17 @@ monopolistic power by consolidation.
 ![](README_files/figure-gfm/plot3-1.png)<!-- -->
 
 It was 22 in 2022 Feb, and failed to drop as much as 5 yen per litre
-subsidy.
+subsidy. It was 19 in 2022 Mar, and failed to drop significantly,
+although 20-25 yen per litre subsidy was given to wholesalers in March.
 
     ## # A tsibble: 5 x 2 [1M]
     ##      month value
     ##      <mth> <dbl>
-    ## 1 2021 Oct  25.6
-    ## 2 2021 Nov  22.6
-    ## 3 2021 Dec  16.3
-    ## 4 2022 Jan  23.0
-    ## 5 2022 Feb  22.3
+    ## 1 2021 Nov  22.6
+    ## 2 2021 Dec  16.3
+    ## 3 2022 Jan  23.0
+    ## 4 2022 Feb  22.2
+    ## 5 2022 Mar  19.3
 
 ## Dubai crude oil price (monthly)
 
