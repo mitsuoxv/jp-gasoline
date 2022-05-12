@@ -51,7 +51,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/220427s5.xls", 
+retail <- read_excel("data/220511s5.xls", 
                      sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 59)))
 
@@ -82,7 +82,7 @@ retail_price_month <- retail_price %>%
 
 ```
 
-I get imported crude oil price data from customs statistics via [e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0). 
+I get imported crude oil price data from customs statistics via [e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0).
 
 ```{r get_crude_from_csv, message=FALSE}
 
@@ -90,17 +90,13 @@ get_crude_oil_price <- function(df) {
   df %>% 
     mutate(Commodity =  str_remove_all(Commodity, "'| ")) %>% 
     filter(Commodity == "30301") %>% 
-    pivot_longer(starts_with("Quantity-"), names_to = "month", values_to = "quantity") %>% 
-    pivot_longer(starts_with("Value-")) %>% 
-    mutate(
-      month = str_remove(month, "Quantity-"),
-      name = str_remove(name, "Value-")
-    ) %>% 
-    filter(month == name, month != "Year") %>% 
+    pivot_longer(!("Exp or Imp":Unit), names_to = c(".value", "month"),
+                 names_pattern = "^(\\w+)\\-(\\w+)$") %>% 
+    filter(month != "Year") %>% 
     mutate(
       month = if_else(month == "Apl", "Apr", month),
       date = dmy(paste(1, month, Year)),
-      crude_oil_price = value / quantity
+      crude_oil_price = Value / Quantity
     ) %>% 
     select(date, crude_oil_price)
 }
@@ -251,7 +247,6 @@ combo %>%
   theme(legend.position = "none")
 
 ```
-
 
 ```{r wholesale_vs_crude, warning=FALSE}
 
@@ -458,7 +453,7 @@ dub_import_retail_diff %>%
 
 ```
 
-The most recent difference between retail price (including constant 10 percent\nconsumption tax) and one month ago Dubai crude oil price is `r dub_import_retail_diff %>% tail(1) %>% pull(diff) %>% round(2)` at `r dub_import_retail_diff %>% tail(1) %>% pull(month) %>% as.character()`
+The most recent difference between retail price (including constant 10 percent\\nconsumption tax) and one month ago Dubai crude oil price is `r dub_import_retail_diff %>% tail(1) %>% pull(diff) %>% round(2)` at `r dub_import_retail_diff %>% tail(1) %>% pull(month) %>% as.character()`
 
 ## Dubai crude oil price (weekly)
 
@@ -571,7 +566,9 @@ meti_dubai_weekly <- tribble(
   "2022-03-29", 81.6,
   "2022-04-05", 79.2,
   "2022-04-12", 83.6,
-  "2022-04-19", 85.6
+  "2022-04-19", 85.6,
+  "2022-04-26", 85.4,
+  "2022-05-03", 85.4
 ) %>% 
   mutate(week = yearweek(start_date)) %>% 
   select(-start_date)
@@ -591,7 +588,9 @@ meti_subsidy <- tribble(
   "2022-03-29", 20.7,
   "2022-04-05", 20.3,
   "2022-04-12", 25,
-  "2022-04-19", 31.8
+  "2022-04-19", 31.8,
+  "2022-04-26", 34.7,
+  "2022-05-03", 34.7
 ) %>% 
   mutate(week = yearweek(start_date)) %>% 
   select(-start_date)
@@ -621,6 +620,11 @@ dubai_weekly2 <- dubai_weekly %>%
   rename(dubai = price)
 
 retail_price_weekly <- retail_price %>% 
+  bind_rows(
+    tibble(date = as.Date("2022-05-02"))
+  ) %>% 
+  arrange(date) %>% 
+  fill(price:price_excl_tax, .direction = "up") %>%
   mutate(
     week = yearweek(date),
     price = 1.1 * price_excl_tax # include constant 10 percent consumption tax
@@ -703,7 +707,6 @@ effects %>%
 
 ```
 
-
 ```{r normal_margin}
 
 normal_margin <- retail_price_weekly %>% 
@@ -720,7 +723,6 @@ normal_margin <- retail_price_weekly %>%
 Above calculation assumes there is a constant margin between Dubai crude oil prices and retail prices. Lag 0 to 5 assumes margins `r normal_margin %>% round(1)` respectively.
 
 Lag 2 assumes `r normal_margin[3] %>% round(1)`, and it is close to the most recent monthly margin `r dub_import_retail_diff %>% tail(1) %>% pull(diff) %>% round(2)` at `r dub_import_retail_diff %>% tail(1) %>% pull(month) %>% as.character()`. Let us assume this margin of `r normal_margin[3] %>% round(1)` over all lags between Dubai crude oil prices and retail prices.
-
 
 ```{r effect_by_lag2}
 
@@ -792,11 +794,11 @@ From this analysis, it is clear that the assumption on lag and normal margin bet
 
 METI changed calculation method from March 14, 2022. The new method is:
 
-1. Reset the last week counterfactual retail price without subsidy to the last week actual retail price plus subsidy.
+1.  Reset the last week counterfactual retail price without subsidy to the last week actual retail price plus subsidy.
 
-2. Add Dubai crude oil price change from the last week to this week to it, and you will get this week counterfactual retail price without subsidy.
+2.  Add Dubai crude oil price change from the last week to this week to it, and you will get this week counterfactual retail price without subsidy.
 
-I think this is a minor change, as METI basically continues to assume that retail prices will reflect subsidies 2 weeks later, and that there is 2 weeks lag between Dubai crude oil prices and retail prices. 
+I think this is a minor change, as METI basically continues to assume that retail prices will reflect subsidies 2 weeks later, and that there is 2 weeks lag between Dubai crude oil prices and retail prices.
 
 ```{r}
 
@@ -819,7 +821,7 @@ p_old <- effects_lag2 %>%
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
   scale_x_yearweek(date_labels = "%m/\n%d") +
-  ylim(0, 30) +
+  ylim(0, 40) +
   labs(x = NULL, y = "Yen per litre", fill = NULL,
        title = "Old method = lag 2") +
   theme(legend.position = "none")
@@ -844,7 +846,7 @@ p_new <- effects_lag2 %>%
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
   scale_x_yearweek(date_labels = "%m/\n%d") +
-  ylim(0, 30) +
+  ylim(0, 40) +
   labs(x = NULL, y = NULL, fill = NULL,
        title = "New method")
 

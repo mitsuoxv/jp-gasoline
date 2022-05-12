@@ -16,7 +16,7 @@ Mitsuo Shiota
 -   [Minor change of METI’s effects calculation from March 14,
     2022](#minor-change-of-metis-effects-calculation-from-march-14-2022)
 
-Updated: 2022-04-28
+Updated: 2022-05-12
 
 ## Summary
 
@@ -134,8 +134,8 @@ by 1 month.
 ![](README_files/figure-gfm/dub_import_retail_diff-1.png)<!-- -->
 
 The most recent difference between retail price (including constant 10
-percenttax) and one month ago Dubai crude oil price is 110.99 at 2021
-Nov
+percent\\nconsumption tax) and one month ago Dubai crude oil price is
+110.99 at 2021 Nov
 
 ## Dubai crude oil price (weekly)
 
