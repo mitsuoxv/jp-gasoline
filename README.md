@@ -15,8 +15,10 @@ Mitsuo Shiota
 -   [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
 -   [Minor change of METI’s effects calculation from March 14,
     2022](#minor-change-of-metis-effects-calculation-from-march-14-2022)
+-   [Wholesalers reported record profits for FY
+    2021](#wholesalers-reported-record-profits-for-fy-2021)
 
-Updated: 2022-05-12
+Updated: 2022-05-18
 
 ## Summary
 
@@ -221,5 +223,10 @@ that retail prices will reflect subsidies 2 weeks later, and that there
 is 2 weeks lag between Dubai crude oil prices and retail prices.
 
 ![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+
+## Wholesalers reported record profits for FY 2021
+
+I tweeted about this
+[here](https://twitter.com/mitsuoxv/status/1519833594046283781).
 
 EOL
