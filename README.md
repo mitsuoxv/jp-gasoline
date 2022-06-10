@@ -18,7 +18,7 @@ Mitsuo Shiota
 -   [Wholesalers reported record profits for FY
     2021](#wholesalers-reported-record-profits-for-fy-2021)
 
-Updated: 2022-06-01
+Updated: 2022-06-10
 
 ## Summary
 
