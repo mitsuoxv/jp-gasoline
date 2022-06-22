@@ -51,7 +51,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/220615s5.xls", 
+retail <- read_excel("data/220622s5.xls", 
                      sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 59)))
 
@@ -573,7 +573,8 @@ meti_dubai_weekly <- tribble(
   "2022-05-17", 88.2,
   "2022-05-24", 89.2,
   "2022-05-31", 93.3,
-  "2022-06-07", 99.1
+  "2022-06-07", 99.1,
+  "2022-06-14", 97.9
 ) %>% 
   mutate(week = yearweek(start_date)) %>% 
   select(-start_date)
@@ -600,7 +601,8 @@ meti_subsidy <- tribble(
   "2022-05-17", 37.3,
   "2022-05-24", 36.7,
   "2022-05-31", 38.8,
-  "2022-06-07", 41.4
+  "2022-06-07", 41.4,
+  "2022-06-14", 40.5
 ) %>% 
   mutate(week = yearweek(start_date)) %>% 
   select(-start_date)
@@ -833,7 +835,7 @@ p_old <- effects_lag2 %>%
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
   scale_x_yearweek(date_labels = "%m/\n%d") +
-  ylim(0, 40) +
+  ylim(0, 50) +
   labs(x = NULL, y = "Yen per litre", fill = NULL,
        title = "Old method = lag 2") +
   theme(legend.position = "none")
@@ -858,7 +860,7 @@ p_new <- effects_lag2 %>%
   geom_col(position = "identity", alpha = 0.5) +
   scale_fill_manual(values = c("red", "blue")) +
   scale_x_yearweek(date_labels = "%m/\n%d") +
-  ylim(0, 40) +
+  ylim(0, 50) +
   labs(x = NULL, y = NULL, fill = NULL,
        title = "New method")
 

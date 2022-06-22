@@ -18,7 +18,7 @@ Mitsuo Shiota
 -   [Wholesalers reported record profits for FY
     2021](#wholesalers-reported-record-profits-for-fy-2021)
 
-Updated: 2022-06-15
+Updated: 2022-06-22
 
 ## Summary
 
@@ -223,9 +223,14 @@ METI changed calculation method from March 14, 2022. The new method is:
 I once thought this is a minor change, as METI basically continues to
 assume that retail prices will reflect subsidies 2 weeks later, and that
 there is 2 weeks lag between Dubai crude oil prices and retail prices.
-No, this is not a minor change. The new method makes effects closer to subsidies inherently, and allows wholesalers and/or retailers to take as much money as they like.
+No, this is not a minor change. The new method makes effects closer to
+subsidies inherently, and allows wholesalers and/or retailers to take as
+much money as they like.
 
-I tweet about this [here (English)](https://twitter.com/mitsuoxv/status/1536998279916924929?s=20&t=arc-0ZS59Qpugt1CcXDGVA) and [here (Japanese)](https://twitter.com/mitsuoxv/status/1537004102697136128?s=20&t=arc-0ZS59Qpugt1CcXDGVA).
+I tweet about this [here
+(English)](https://twitter.com/mitsuoxv/status/1536998279916924929?s=20&t=arc-0ZS59Qpugt1CcXDGVA)
+and [here
+(Japanese)](https://twitter.com/mitsuoxv/status/1537004102697136128?s=20&t=arc-0ZS59Qpugt1CcXDGVA).
 
 ![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
