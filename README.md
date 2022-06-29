@@ -13,12 +13,14 @@ Mitsuo Shiota
     -   [vs wholesale gasoline price](#vs-wholesale-gasoline-price)
     -   [vs retail gasoline price](#vs-retail-gasoline-price)
 -   [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
--   [Minor change of METI’s effects calculation from March 14,
-    2022](#minor-change-of-metis-effects-calculation-from-march-14-2022)
+-   [Change of METI’s effects calculation from March 14,
+    2022](#change-of-metis-effects-calculation-from-march-14-2022)
 -   [Wholesalers reported record profits for FY
     2021](#wholesalers-reported-record-profits-for-fy-2021)
+-   [Do wholesalers hand over subsidy fully to retailers as METI
+    expected?](#do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected)
 
-Updated: 2022-06-22
+Updated: 2022-06-29
 
 ## Summary
 
@@ -62,7 +64,7 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/wholesale_vs_crude-1.png)<!-- -->
 
-Correlations are 0.9709 if wholesales lead Japan customs by 1 month,
+Correlations are 0.9708 if wholesales lead Japan customs by 1 month,
 0.9788 if wholesales is concurrent with Japan customs, and 0.9464 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs.
@@ -78,30 +80,16 @@ material
 (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf)
 from Agency for National Resources Energy.
 
-![](README_files/figure-gfm/plot%202-1.png)<!-- -->
+![](README_files/figure-gfm/plot2-1.png)<!-- -->
 
 Differences between wholesale price and imported crude oil price plus
 gasoline tax have also been increasing. The average difference was 16
 yen per litre from 2001 Jan to 2014 Dec, and is 23 in 2022 Jan. This may
 reflect the reduced competition among wholesalers, who have got
-monopolistic power by consolidation.
+monopolistic power by consolidation. The decrease from 2022 Feb is due
+to subsidy.
 
 ![](README_files/figure-gfm/plot3-1.png)<!-- -->
-
-It was 22 in 2022 Feb, and failed to drop as much as 5 yen per litre
-subsidy. It was 19 in 2022 Mar, and failed to drop significantly,
-despite 20-25 yen per litre subsidy given to wholesalers in March. It
-was 1 in 2022 Apr, and failed to drop by as much as 20-35 yen per litre
-subsidy given to wholesalers in April.
-
-    ## # A tsibble: 5 x 2 [1M]
-    ##      month  value
-    ##      <mth>  <dbl>
-    ## 1 2021 Dec 16.3  
-    ## 2 2022 Jan 23.0  
-    ## 3 2022 Feb 22.2  
-    ## 4 2022 Mar 19.3  
-    ## 5 2022 Apr  0.754
 
 ## Dubai crude oil price (monthly)
 
@@ -116,6 +104,11 @@ Correlations are 0.9674 if 0 month lag from Dubai to Japan customs,
 0.9974 if 1 month lag, and 0.9744 if 2 months lag. The highest
 correlation is if Japan customs lag Dubai by 1 month.
 
+![](README_files/figure-gfm/dub_import_diff-1.png)<!-- -->
+
+Import price is higer than Dubai price by 2.08 yen per litre on average,
+probably due to CIF costs.
+
 ### vs wholesale gasoline price
 
 ![](README_files/figure-gfm/dub_wholesale-1.png)<!-- -->
@@ -124,6 +117,8 @@ Wholesale prices follow Dubai crude oil prices of one month ago.
 Correlations are 0.97 if 0 month lag from Dubai to wholesalers, 0.9822
 if 1 month lag, and 0.9481 if 2 months lag. The highest correlation is
 if wholesales lag Dubai by 1 month.
+
+![](README_files/figure-gfm/dub_import_wholesale_diff-1.png)<!-- -->
 
 ### vs retail gasoline price
 
@@ -209,7 +204,7 @@ between Dubai and retail prices is historically large. I hope I will
 find out whether METI’s assumption is reasonable or not, while I update
 this page.
 
-## Minor change of METI’s effects calculation from March 14, 2022
+## Change of METI’s effects calculation from March 14, 2022
 
 METI changed calculation method from March 14, 2022. The new method is:
 
@@ -238,5 +233,42 @@ and [here
 
 I tweeted about this
 [here](https://twitter.com/mitsuoxv/status/1519833594046283781).
+
+## Do wholesalers hand over subsidy fully to retailers as METI expected?
+
+Although I disagree to the METI assumptions, first, I assume them to
+check whether wholesalers are acting as METI expected. So I assume that
+Dubai crude oil price and subsidy will be reflected to wholesale gas
+price 10 days (2 weeks) later, and that the usual margin of wholesalers
+is the same as that of 2022 Jan, which is higher than average but within
+the historical range. Then, I calculate how much the actual wholesale
+gas price exceeds the expected price if subsidy is fully reflected. From
+2022 Jan to 2022 Apr, the excesses are small.
+
+| Month    | Actual | Dubai crude | Subsidy | Gas tax | Usual margin | Expected | Excess |
+|:---------|-------:|------------:|--------:|--------:|-------------:|---------:|-------:|
+| 2022 Jan |  134.4 |        56.9 |     0.0 |    53.8 |         23.7 |    134.4 |    0.0 |
+| 2022 Feb |  138.7 |        65.2 |     4.7 |    53.8 |         23.7 |    138.0 |    0.7 |
+| 2022 Mar |  140.0 |        78.5 |    16.6 |    53.8 |         23.7 |    139.4 |    0.6 |
+| 2022 Apr |  137.8 |        83.1 |    22.8 |    53.8 |         23.7 |    137.8 |    0.0 |
+
+Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
+lag of Dubai
+
+Next, I change the assumption on lag of Dubai price from 10 days (2
+weeks) based on LIFO to one month (5 weeks) based on the average method
+of inventory evaluation actually adopted by wholesalers. In Feb and Mar,
+when Dubai price was rising, excesses were large enough to show most
+subsidy was taken by wholesalers. In Apr, when Dubai in plateau, excess
+was small.
+
+| Month    | Actual | Dubai crude | Subsidy | Gas tax | Usual margin | Expected | Excess |
+|:---------|-------:|------------:|--------:|--------:|-------------:|---------:|-------:|
+| 2022 Feb |  138.7 |        60.7 |     4.7 |    53.8 |         23.7 |    133.5 |    5.2 |
+| 2022 Mar |  140.0 |        67.0 |    16.6 |    53.8 |         23.7 |    127.9 |   12.1 |
+| 2022 Apr |  137.8 |        83.0 |    22.8 |    53.8 |         23.7 |    137.8 |    0.0 |
+
+Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
+lag of Dubai
 
 EOL

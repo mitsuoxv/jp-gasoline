@@ -51,7 +51,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/220622s5.xls", 
+retail <- read_excel("data/220629s5.xls", 
                      sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 59)))
 
@@ -280,49 +280,32 @@ Correlations are `r cor(wholesale_crude$crude_plus_tax[-1], wholesale_crude$whol
 
 Differences between retail and wholesale prices have been increasing since 2016. The average difference was `r combo %>% filter(name == "diff_rw") %>% filter_index("2000 Jul" ~ "2015 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2000 Jul to 2015 Dec, and is `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(value) %>% round()` in `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(month)`. This may reflect the reduced competition among retailers. You can see the number of retailers has constantly decreased since around 1995 in the last page of [this material (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf) from Agency for National Resources Energy.
 
-```{r plot 2, warning=FALSE}
+```{r plot2}
 
 combo %>% 
-  filter(name == "diff_rw") %>% 
+  filter(name == "diff_rw", !is.na(value)) %>% 
   autoplot(value) +
   geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "diff_rw") %>% 
-              tail(1),
+            data = . %>% slice_tail(n = 1),
             hjust = -0.2, vjust = 0) +
   expand_limits(y = 0) +
   labs(y = "Yen per litre",
-       title = "Differences between retail and wholesale prices")
+       title = "Retailers' margin = retail price - wholesale price")
 
 ```
 
-Differences between wholesale price and imported crude oil price plus gasoline tax have also been increasing. The average difference was `r combo %>% filter(name == "diff_wc") %>% filter_index("2001 Jan" ~ "2014 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2001 Jan to 2014 Dec, and is `r combo %>% filter(name == "diff_wc", !is.na(value), month == yearmonth("2022 Jan")) %>%  pull(value) %>% round()` in 2022 Jan. This may reflect the reduced competition among wholesalers, who have got monopolistic power by consolidation.
+Differences between wholesale price and imported crude oil price plus gasoline tax have also been increasing. The average difference was `r combo %>% filter(name == "diff_wc") %>% filter_index("2001 Jan" ~ "2014 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2001 Jan to 2014 Dec, and is `r combo %>% filter(name == "diff_wc", !is.na(value), month == yearmonth("2022 Jan")) %>%  pull(value) %>% round()` in 2022 Jan. This may reflect the reduced competition among wholesalers, who have got monopolistic power by consolidation. The decrease from 2022 Feb is due to subsidy.
 
-```{r plot3, warning=FALSE}
-
-combo %>% 
-  filter(name == "diff_wc") %>% 
-  autoplot(value) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "diff_rw") %>% 
-              tail(1),
-            hjust = -0.2, vjust = 0) +
-  labs(y = "Yen per litre",
-       title = "Differences between wholesale price and\nimported crude oil price + gasoline tax")
-
-```
-
-It was `r combo %>% filter(name == "diff_wc", !is.na(value), month == yearmonth("2022 Feb")) %>%  pull(value) %>% round()` in 2022 Feb, and failed to drop as much as 5 yen per litre subsidy. It was `r combo %>% filter(name == "diff_wc", !is.na(value), month == yearmonth("2022 Mar")) %>%  pull(value) %>% round()` in 2022 Mar, and failed to drop significantly, despite 20-25 yen per litre subsidy given to wholesalers in March. It was `r combo %>% filter(name == "diff_wc", !is.na(value), month == yearmonth("2022 Apr")) %>%  pull(value) %>% round()` in 2022 Apr, and failed to drop by as much as 20-35 yen per litre subsidy given to wholesalers in April.
-
-```{r recent_diff_wc}
+```{r plot3}
 
 combo %>% 
   filter(name == "diff_wc", !is.na(value)) %>% 
-  select(-name) %>% 
-  slice_tail(n = 5)
+  autoplot(value) +
+  geom_text(aes(label = month(month, label = TRUE)),
+            data = . %>% slice_tail(n = 1),
+            hjust = -0.2, vjust = 0) +
+  labs(y = "Yen per litre",
+       title = "Wholesalers' margin = wholesale price - (imported crude oil price +\ngasoline tax)")
 
 ```
 
@@ -373,6 +356,29 @@ p0 | p1 | p2
 
 Correlations are `r cor(dub_import$dub_oil_price, dub_import$import_price) %>% round(4)` if 0 month lag from Dubai to Japan customs, `r cor(dub_import$dub_oil_price[-251], dub_import$import_price[-1]) %>% round(4)` if 1 month lag, and `r cor(dub_import$dub_oil_price[c(-nrow(dub_import) + 1, -nrow(dub_import))], dub_import$import_price[c(-1, -2)]) %>% round(4)` if 2 months lag. The highest correlation is if Japan customs lag Dubai by 1 month.
 
+```{r dub_import_diff}
+dub_import_diff <- dub_import %>% 
+  mutate(
+    dub_lag_1 = lag(dub_oil_price, 1),
+    diff = import_price - dub_lag_1
+  ) %>% 
+  filter(!is.na(diff))
+
+dub_import_diff %>% 
+  autoplot(diff) +
+  labs(y = "Yen per litre",
+       title = "Import price - one month ago Dubai price")
+```
+
+Import price is higer than Dubai price by 
+`r dub_import_diff %>% 
+  as_tibble() %>% 
+  summarize(mean_diff = mean(diff)) %>% 
+  pull(mean_diff) %>% 
+  round(digits = 2)
+`
+yen per litre on average, probably due to CIF costs.
+
 ### vs wholesale gasoline price
 
 ```{r dub_wholesale, warning=FALSE}
@@ -402,6 +408,29 @@ p0w | p1w | p2w
 ```
 
 Wholesale prices follow Dubai crude oil prices of one month ago. Correlations are `r cor(dub_import_wholesale$dub_oil_price, dub_import_wholesale$wholesale_price) %>% round(4)` if 0 month lag from Dubai to wholesalers, `r cor(dub_import_wholesale$dub_oil_price[-nrow(dub_import_wholesale)], dub_import_wholesale$wholesale_price[-1]) %>% round(4)` if 1 month lag, and `r cor(dub_import_wholesale$dub_oil_price[c(-nrow(dub_import_wholesale) + 1, -nrow(dub_import_wholesale))], dub_import_wholesale$wholesale_price[c(-1, -2)]) %>% round(4)` if 2 months lag. The highest correlation is if wholesales lag Dubai by 1 month.
+
+```{r dub_import_wholesale_diff}
+
+dub_import_wholesale_diff <- dub_import_wholesale %>% 
+  mutate(
+    dub_oil_price_lag = lag(dub_oil_price),
+    gas_tax = 53.8,
+    diff = wholesale_price - dub_oil_price_lag - gas_tax
+  ) %>% 
+  filter(!is.na(diff))
+
+dub_import_wholesale_diff %>% 
+  autoplot(diff) +
+  geom_text(aes(label = month), 
+            vjust = 0, hjust = 1,
+            data = . %>% slice_tail(n = 1)) +
+  geom_text(aes(label = round(diff, digits = 0)), 
+            vjust = 0, hjust = 0,
+            data = . %>% slice_tail(n = 1)) +
+  labs(y = "Yen per litre",
+       title = "Historical wholesalers' margin = wholesale price -\n(one month ago Dubai crude oil price + gas tax)")
+
+```
 
 ### vs retail gasoline price
 
@@ -445,9 +474,12 @@ dub_import_retail_diff <- dub_import_retail %>%
 
 dub_import_retail_diff %>% 
   autoplot(diff) +
-  geom_text(aes(label = round(diff, 0)), 
+  geom_text(aes(label = month), 
+            vjust = 0, hjust = 1,
+            data = . %>% slice_tail(n = 1)) +
+  geom_text(aes(label = round(diff, digits = 0)), 
             vjust = 0, hjust = 0,
-            data = dub_import_retail_diff %>% tail(1)) +
+            data = . %>% slice_tail(n = 1)) +
   labs(y = "Yen per litre",
        title = "Difference between retail price (including constant 10 percent\nconsumption tax) and one month ago Dubai crude oil price")
 
@@ -574,7 +606,8 @@ meti_dubai_weekly <- tribble(
   "2022-05-24", 89.2,
   "2022-05-31", 93.3,
   "2022-06-07", 99.1,
-  "2022-06-14", 97.9
+  "2022-06-14", 97.9,
+  "2022-06-21", 92.3
 ) %>% 
   mutate(week = yearweek(start_date)) %>% 
   select(-start_date)
@@ -602,7 +635,8 @@ meti_subsidy <- tribble(
   "2022-05-24", 36.7,
   "2022-05-31", 38.8,
   "2022-06-07", 41.4,
-  "2022-06-14", 40.5
+  "2022-06-14", 40.5,
+  "2022-06-21", 38.4
 ) %>% 
   mutate(week = yearweek(start_date)) %>% 
   select(-start_date)
@@ -802,7 +836,7 @@ As I assume fixed margin based on lag 2 assumption, lag 2 does not change from t
 
 From this analysis, it is clear that the assumption on lag and normal margin between Dubai crude oil prices and retail gasoline prices is very important to calculate the effects by subsidies. METI assumes lag of 2 weeks from Dubai to retailers (0 week from Dubai to wholesalers and 2 weeks from wholesalers to retailers), and normal margin `r normal_margin[3] %>% round(1)` yen per litre between Dubai and retail prices. However, the monthly data analysis in the previous chapter suggests that there usually is one month lag from Dubai to retailers, and that `r normal_margin[3] %>% round(1)` yen per litre gap between Dubai and retail prices is historically large. I hope I will find out whether METI's assumption is reasonable or not, while I update this page.
 
-## Minor change of METI's effects calculation from March 14, 2022
+## Change of METI's effects calculation from March 14, 2022
 
 METI changed calculation method from March 14, 2022. The new method is:
 
@@ -871,5 +905,81 @@ p_old | p_new
 ## Wholesalers reported record profits for FY 2021
 
 I tweeted about this [here](https://twitter.com/mitsuoxv/status/1519833594046283781).
+
+## Do wholesalers hand over subsidy fully to retailers as METI expected?
+
+Although I disagree to the METI assumptions, first, I assume them to check whether wholesalers are acting as METI expected. So I assume that Dubai crude oil price and subsidy will be reflected to wholesale gas price 10 days (2 weeks) later, and that the usual margin of wholesalers is the same as that of 2022 Jan, which is higher than average but within the historical range. Then, I calculate how much the actual wholesale gas price exceeds the expected price if subsidy is fully reflected. From 2022 Jan to 2022 Apr, the excesses are small.
+
+```{r}
+meti_subsidy_monthly <- meti_subsidy %>% 
+  mutate(
+    subsidy_lag2 = lag(subsidy, 2),
+    month = yearmonth(week)
+    ) %>% 
+  group_by(month) %>% 
+  summarize(subsidy = mean(subsidy_lag2))
+
+dubai_monthly <- dubai_weekly2 %>% 
+  mutate(
+    dubai_lag = lag(dubai, 2),
+    month = yearmonth(week)
+    ) %>% 
+  group_by(month) %>% 
+  summarize(dubai = mean(dubai_lag))
+
+dubai_monthly %>% 
+  left_join(meti_subsidy_monthly, by = "month") %>% 
+  left_join(combo %>%
+              filter(name == "wholesale_price") %>%
+              select(month, wholesale_price = value),
+            by = "month") %>% 
+  replace_na(list(subsidy = 0)) %>% 
+  filter(!is.na(wholesale_price), !is.na(dubai)) %>% 
+  mutate(
+    gas_tax = 53.8,
+    usual_margin = 23.7,
+    expected_wholesale_price = dubai + gas_tax + usual_margin - subsidy,
+    diff = wholesale_price - expected_wholesale_price
+    ) %>% 
+  relocate(wholesale_price, .after = month) %>% 
+  filter(month >= yearmonth("2022 Jan")) %>% 
+  knitr::kable(format = "simple",
+               digits = 1,
+               col.names = c("Month", "Actual", "Dubai crude", "Subsidy", "Gas tax", "Usual margin", "Expected", "Excess"),
+               caption = "Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks lag of Dubai")
+```
+
+Next, I change the assumption on lag of Dubai price from 10 days (2 weeks) based on LIFO to one month (5 weeks) based on the average method of inventory evaluation actually adopted by wholesalers. In Feb and Mar, when Dubai price was rising, excesses were large enough to show most subsidy was taken by wholesalers. In Apr, when Dubai in plateau, excess was small.
+
+```{r}
+dubai_monthly_lag5 <- dubai_weekly2 %>% 
+  mutate(
+    dubai_lag = lag(dubai, 5),
+    month = yearmonth(week)
+    ) %>% 
+  group_by(month) %>% 
+  summarize(dubai = mean(dubai_lag))
+
+dubai_monthly_lag5 %>% 
+  left_join(meti_subsidy_monthly, by = "month") %>% 
+  left_join(combo %>%
+              filter(name == "wholesale_price") %>%
+              select(month, wholesale_price = value),
+            by = "month") %>% 
+  replace_na(list(subsidy = 0)) %>% 
+  filter(!is.na(wholesale_price), !is.na(dubai)) %>% 
+  mutate(
+    gas_tax = 53.8,
+    usual_margin = 23.7,
+    expected_wholesale_price = dubai + gas_tax + usual_margin - subsidy,
+    diff = wholesale_price - expected_wholesale_price
+    ) %>% 
+  relocate(wholesale_price, .after = month) %>% 
+  filter(month >= yearmonth("2022 Feb")) %>% 
+  knitr::kable(format = "simple",
+               digits = 1,
+               col.names = c("Month", "Actual", "Dubai crude", "Subsidy", "Gas tax", "Usual margin", "Expected", "Excess"),
+               caption = "Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks lag of Dubai")
+```
 
 EOL
