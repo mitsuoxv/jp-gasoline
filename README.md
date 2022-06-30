@@ -20,7 +20,7 @@ Mitsuo Shiota
 -   [Do wholesalers hand over subsidy fully to retailers as METI
     expected?](#do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected)
 
-Updated: 2022-06-29
+Updated: 2022-06-30
 
 ## Summary
 
@@ -64,8 +64,8 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/wholesale_vs_crude-1.png)<!-- -->
 
-Correlations are 0.9708 if wholesales lead Japan customs by 1 month,
-0.9788 if wholesales is concurrent with Japan customs, and 0.9464 if
+Correlations are 0.9681 if wholesales lead Japan customs by 1 month,
+0.9743 if wholesales is concurrent with Japan customs, and 0.9435 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs.
 
@@ -73,7 +73,7 @@ wholesales is concurrent with Japan customs.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 20 in 2022 Apr. This may reflect the reduced
+2015 Dec, and is 21 in 2022 May. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -81,6 +81,18 @@ material
 from Agency for National Resources Energy.
 
 ![](README_files/figure-gfm/plot2-1.png)<!-- -->
+
+| Month    | Excess over 2021 average |
+|:---------|-------------------------:|
+| 2022 Feb |                      0.4 |
+| 2022 Mar |                      1.6 |
+| 2022 Apr |                      2.8 |
+| 2022 May |                      3.9 |
+
+Retailers’ excess margin (yen / liter)
+
+The average retailers’ margin in 2021 was 17.2. If I subtract it from
+retailers’ margin, I get excess margin above.
 
 Differences between wholesale price and imported crude oil price plus
 gasoline tax have also been increasing. The average difference was 16
@@ -251,6 +263,7 @@ gas price exceeds the expected price if subsidy is fully reflected. From
 | 2022 Feb |  138.7 |        65.2 |     4.7 |    53.8 |         23.7 |    138.0 |    0.7 |
 | 2022 Mar |  140.0 |        78.5 |    16.6 |    53.8 |         23.7 |    139.4 |    0.6 |
 | 2022 Apr |  137.8 |        83.1 |    22.8 |    53.8 |         23.7 |    137.8 |    0.0 |
+| 2022 May |  133.1 |        86.0 |    34.9 |    53.8 |         23.7 |    128.6 |    4.5 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
 lag of Dubai
@@ -267,6 +280,7 @@ was small.
 | 2022 Feb |  138.7 |        60.7 |     4.7 |    53.8 |         23.7 |    133.5 |    5.2 |
 | 2022 Mar |  140.0 |        67.0 |    16.6 |    53.8 |         23.7 |    127.9 |   12.1 |
 | 2022 Apr |  137.8 |        83.0 |    22.8 |    53.8 |         23.7 |    137.8 |    0.0 |
+| 2022 May |  133.1 |        83.1 |    34.9 |    53.8 |         23.7 |    125.7 |    7.4 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
 lag of Dubai

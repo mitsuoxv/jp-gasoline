@@ -36,7 +36,7 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 
 ```{r get_data, message=FALSE}
 
-wholesale <- read_excel("data/220531o5.xls",
+wholesale <- read_excel("data/220630o5.xls",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 55))
                         ) %>% 
@@ -293,6 +293,29 @@ combo %>%
        title = "Retailers' margin = retail price - wholesale price")
 
 ```
+
+```{r mean_diff_2021}
+mean_diff_2021 <- combo %>% 
+  filter(name == "diff_rw", !is.na(value)) %>% 
+  filter(year(month) == 2021) %>% 
+  as_tibble() %>% 
+  summarize(mean_diff = mean(value)) %>% 
+  pull(mean_diff)
+
+combo %>% 
+  filter(name == "diff_rw", !is.na(value)) %>% 
+  mutate(diff_from_mean = value - mean_diff_2021) %>% 
+  select(month, diff_from_mean) %>% 
+  filter(month >= yearmonth("2022 Feb")) %>% 
+  knitr::kable(format = "simple",
+               digits = 1,
+               col.names = c("Month", "Excess over 2021 average"),
+               caption = "Retailers' excess margin (yen / liter)")
+```
+
+The average retailers' margin in 2021 was
+`r mean_diff_2021 %>% round(digits = 1)`. If I subtract it from retailers' margin, I get excess margin above.
+
 
 Differences between wholesale price and imported crude oil price plus gasoline tax have also been increasing. The average difference was `r combo %>% filter(name == "diff_wc") %>% filter_index("2001 Jan" ~ "2014 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2001 Jan to 2014 Dec, and is `r combo %>% filter(name == "diff_wc", !is.na(value), month == yearmonth("2022 Jan")) %>%  pull(value) %>% round()` in 2022 Jan. This may reflect the reduced competition among wholesalers, who have got monopolistic power by consolidation. The decrease from 2022 Feb is due to subsidy.
 
