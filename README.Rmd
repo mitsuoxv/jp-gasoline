@@ -36,7 +36,7 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 
 ```{r get_data, message=FALSE}
 
-wholesale <- read_excel("data/220729o5.xls",
+wholesale <- read_excel("data/220831o5.xls",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 55))
                         ) %>% 
@@ -51,7 +51,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/220824s5.xls", 
+retail <- read_excel("data/220831s5.xls", 
                      sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 59)))
 
