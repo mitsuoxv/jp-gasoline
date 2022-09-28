@@ -33,7 +33,7 @@ Mitsuo Shiota
     id="toc-do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected">Do
     wholesalers hand over subsidy fully to retailers as METI expected?</a>
 
-Updated: 2022-09-22
+Updated: 2022-09-28
 
 ## Summary
 
