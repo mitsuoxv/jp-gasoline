@@ -33,7 +33,7 @@ Mitsuo Shiota
     id="toc-do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected">Do
     wholesalers hand over subsidy fully to retailers as METI expected?</a>
 
-Updated: 2022-09-28
+Updated: 2022-09-30
 
 ## Summary
 
@@ -77,8 +77,8 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/wholesale_vs_crude-1.png)<!-- -->
 
-Correlations are 0.9555 if wholesales lead Japan customs by 1 month,
-0.9616 if wholesales is concurrent with Japan customs, and 0.9354 if
+Correlations are 0.95 if wholesales lead Japan customs by 1 month,
+0.9556 if wholesales is concurrent with Japan customs, and 0.9277 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs.
 
@@ -86,7 +86,7 @@ wholesales is concurrent with Japan customs.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 22 in 2022 Jul. This may reflect the reduced
+2015 Dec, and is 21 in 2022 Aug. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -103,6 +103,7 @@ from Agency for National Resources Energy.
 | 2022 May |                      3.9 |
 | 2022 Jun |                      0.5 |
 | 2022 Jul |                      5.1 |
+| 2022 Aug |                      3.7 |
 
 Retailers’ excess margin (yen / liter)
 
@@ -127,13 +128,13 @@ month ago.
 
 ![](README_files/figure-gfm/dub_import-1.png)<!-- -->
 
-Correlations are 0.9681 if 0 month lag from Dubai to Japan customs,
-0.9944 if 1 month lag, and 0.9757 if 2 months lag. The highest
+Correlations are 0.9683 if 0 month lag from Dubai to Japan customs,
+0.9938 if 1 month lag, and 0.9765 if 2 months lag. The highest
 correlation is if Japan customs lag Dubai by 1 month.
 
 ![](README_files/figure-gfm/dub_import_diff-1.png)<!-- -->
 
-Import price is higer than Dubai price by 2.12 yen per litre on average,
+Import price is higer than Dubai price by 2.14 yen per litre on average,
 probably due to CIF costs.
 
 ### vs wholesale gasoline price
@@ -141,9 +142,9 @@ probably due to CIF costs.
 ![](README_files/figure-gfm/dub_wholesale-1.png)<!-- -->
 
 Wholesale prices follow Dubai crude oil prices of one month ago.
-Correlations are 0.952 if 0 month lag from Dubai to wholesalers, 0.9662
-if 1 month lag, and 0.941 if 2 months lag. The highest correlation is if
-wholesales lag Dubai by 1 month.
+Correlations are 0.9496 if 0 month lag from Dubai to wholesalers, 0.9619
+if 1 month lag, and 0.9336 if 2 months lag. The highest correlation is
+if wholesales lag Dubai by 1 month.
 
 ![](README_files/figure-gfm/dub_import_wholesale_diff-1.png)<!-- -->
 
@@ -152,16 +153,16 @@ wholesales lag Dubai by 1 month.
 ![](README_files/figure-gfm/dub_retail-1.png)<!-- -->
 
 Retail prices (including constant 10 percent consumption tax) also
-follow Dubai crude oil prices of one month ago. Correlations are 0.9341
-if 0 month lag from Dubai to Japan customs, 0.9575 if 1 month lag, and
-0.9396 if 2 months lag. The highest correlation is if retails lag Dubai
+follow Dubai crude oil prices of one month ago. Correlations are 0.9338
+if 0 month lag from Dubai to Japan customs, 0.9557 if 1 month lag, and
+0.9355 if 2 months lag. The highest correlation is if retails lag Dubai
 by 1 month.
 
 ![](README_files/figure-gfm/dub_import_retail_diff-1.png)<!-- -->
 
 The most recent difference between retail price (including constant 10
 percent\nconsumption tax) and one month ago Dubai crude oil price is
-77.77 at 2022 Jul
+83.2 at 2022 Aug
 
 ## Dubai crude oil price (weekly)
 
@@ -208,7 +209,7 @@ oil prices and retail prices. Lag 0 to 5 assumes margins 107.3, 107.6,
 110.8, 112.4, 118.5, 118.5 respectively.
 
 Lag 2 assumes 110.8, and it is close to the most recent monthly margin
-77.77 at 2022 Jul. Let us assume this margin of 110.8 over all lags
+83.2 at 2022 Aug. Let us assume this margin of 110.8 over all lags
 between Dubai crude oil prices and retail prices.
 
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
@@ -281,6 +282,7 @@ gas price exceeds the expected price if subsidy is fully reflected. From
 | 2022 May |  133.1 |        86.0 |    34.9 |    53.8 |         23.7 |    128.6 |    4.5 |
 | 2022 Jun |  139.1 |        94.9 |    39.4 |    53.8 |         23.7 |    133.0 |    6.1 |
 | 2022 Jul |  134.1 |        90.4 |    38.2 |    53.8 |         23.7 |    129.8 |    4.3 |
+| 2022 Aug |  133.2 |        84.6 |    34.9 |    53.8 |         23.7 |    127.3 |    5.9 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
 lag of Dubai
@@ -300,6 +302,7 @@ was small.
 | 2022 May |  133.1 |        83.1 |    34.9 |    53.8 |         23.7 |    125.7 |    7.4 |
 | 2022 Jun |  139.1 |        87.1 |    39.4 |    53.8 |         23.7 |    125.2 |   13.9 |
 | 2022 Jul |  134.1 |        95.7 |    38.2 |    53.8 |         23.7 |    135.0 |   -0.9 |
+| 2022 Aug |  133.2 |        89.9 |    34.9 |    53.8 |         23.7 |    132.6 |    0.6 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
 lag of Dubai
