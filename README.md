@@ -33,7 +33,7 @@ Mitsuo Shiota
     id="toc-do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected">Do
     wholesalers hand over subsidy fully to retailers as METI expected?</a>
 
-Updated: 2022-11-02
+Updated: 2022-11-09
 
 ## Summary
 
@@ -129,13 +129,13 @@ month ago.
 
 ![](README_files/figure-gfm/dub_import-1.png)<!-- -->
 
-Correlations are 0.9682 if 0 month lag from Dubai to Japan customs,
-0.9938 if 1 month lag, and 0.9765 if 2 months lag. The highest
+Correlations are 0.9681 if 0 month lag from Dubai to Japan customs,
+0.9929 if 1 month lag, and 0.977 if 2 months lag. The highest
 correlation is if Japan customs lag Dubai by 1 month.
 
 ![](README_files/figure-gfm/dub_import_diff-1.png)<!-- -->
 
-Import price is higer than Dubai price by 2.14 yen per litre on average,
+Import price is higer than Dubai price by 2.2 yen per litre on average,
 probably due to CIF costs.
 
 ### vs wholesale gasoline price
@@ -143,8 +143,8 @@ probably due to CIF costs.
 ![](README_files/figure-gfm/dub_wholesale-1.png)<!-- -->
 
 Wholesale prices follow Dubai crude oil prices of one month ago.
-Correlations are 0.9496 if 0 month lag from Dubai to wholesalers, 0.9619
-if 1 month lag, and 0.9336 if 2 months lag. The highest correlation is
+Correlations are 0.9478 if 0 month lag from Dubai to wholesalers, 0.9596
+if 1 month lag, and 0.9302 if 2 months lag. The highest correlation is
 if wholesales lag Dubai by 1 month.
 
 ![](README_files/figure-gfm/dub_import_wholesale_diff-1.png)<!-- -->
@@ -154,16 +154,16 @@ if wholesales lag Dubai by 1 month.
 ![](README_files/figure-gfm/dub_retail-1.png)<!-- -->
 
 Retail prices (including constant 10 percent consumption tax) also
-follow Dubai crude oil prices of one month ago. Correlations are 0.9338
-if 0 month lag from Dubai to Japan customs, 0.9557 if 1 month lag, and
-0.9355 if 2 months lag. The highest correlation is if retails lag Dubai
+follow Dubai crude oil prices of one month ago. Correlations are 0.9336
+if 0 month lag from Dubai to Japan customs, 0.9551 if 1 month lag, and
+0.9342 if 2 months lag. The highest correlation is if retails lag Dubai
 by 1 month.
 
 ![](README_files/figure-gfm/dub_import_retail_diff-1.png)<!-- -->
 
 The most recent difference between retail price (including constant 10
 percent\nconsumption tax) and one month ago Dubai crude oil price is
-83.2 at 2022 Aug
+88.3 at 2022 Sep
 
 ## Dubai crude oil price (weekly)
 
@@ -210,7 +210,7 @@ oil prices and retail prices. Lag 0 to 5 assumes margins 107.3, 107.6,
 110.8, 112.4, 118.5, 118.5 respectively.
 
 Lag 2 assumes 110.8, and it is close to the most recent monthly margin
-83.2 at 2022 Aug. Let us assume this margin of 110.8 over all lags
+88.3 at 2022 Sep. Let us assume this margin of 110.8 over all lags
 between Dubai crude oil prices and retail prices.
 
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
