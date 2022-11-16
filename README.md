@@ -3,37 +3,37 @@ Gasoline prices in Japan
 Mitsuo Shiota
 2021-11-17
 
--   <a href="#summary" id="toc-summary">Summary</a>
--   <a href="#get-gasoline-prices" id="toc-get-gasoline-prices">Get gasoline
-    prices</a>
--   <a href="#plot-retail-wholesale-gas-and-crude-oil-prices"
-    id="toc-plot-retail-wholesale-gas-and-crude-oil-prices">Plot retail,
-    wholesale gas and crude oil prices</a>
--   <a href="#plot-price-differences" id="toc-plot-price-differences">Plot
-    price differences</a>
--   <a href="#dubai-crude-oil-price-monthly"
-    id="toc-dubai-crude-oil-price-monthly">Dubai crude oil price
-    (monthly)</a>
-    -   <a href="#vs-japan-customs-import-price"
-        id="toc-vs-japan-customs-import-price">vs Japan customs import price</a>
-    -   <a href="#vs-wholesale-gasoline-price"
-        id="toc-vs-wholesale-gasoline-price">vs wholesale gasoline price</a>
-    -   <a href="#vs-retail-gasoline-price" id="toc-vs-retail-gasoline-price">vs
-        retail gasoline price</a>
--   <a href="#dubai-crude-oil-price-weekly"
-    id="toc-dubai-crude-oil-price-weekly">Dubai crude oil price (weekly)</a>
--   <a href="#change-of-metis-effects-calculation-from-march-14-2022"
-    id="toc-change-of-metis-effects-calculation-from-march-14-2022">Change
-    of METI’s effects calculation from March 14, 2022</a>
--   <a href="#wholesalers-reported-record-profits-for-fy-2021"
-    id="toc-wholesalers-reported-record-profits-for-fy-2021">Wholesalers
-    reported record profits for FY 2021</a>
--   <a
-    href="#do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected"
-    id="toc-do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected">Do
-    wholesalers hand over subsidy fully to retailers as METI expected?</a>
+- <a href="#summary" id="toc-summary">Summary</a>
+- <a href="#get-gasoline-prices" id="toc-get-gasoline-prices">Get gasoline
+  prices</a>
+- <a href="#plot-retail-wholesale-gas-and-crude-oil-prices"
+  id="toc-plot-retail-wholesale-gas-and-crude-oil-prices">Plot retail,
+  wholesale gas and crude oil prices</a>
+- <a href="#plot-price-differences" id="toc-plot-price-differences">Plot
+  price differences</a>
+- <a href="#dubai-crude-oil-price-monthly"
+  id="toc-dubai-crude-oil-price-monthly">Dubai crude oil price
+  (monthly)</a>
+  - <a href="#vs-japan-customs-import-price"
+    id="toc-vs-japan-customs-import-price">vs Japan customs import price</a>
+  - <a href="#vs-wholesale-gasoline-price"
+    id="toc-vs-wholesale-gasoline-price">vs wholesale gasoline price</a>
+  - <a href="#vs-retail-gasoline-price" id="toc-vs-retail-gasoline-price">vs
+    retail gasoline price</a>
+- <a href="#dubai-crude-oil-price-weekly"
+  id="toc-dubai-crude-oil-price-weekly">Dubai crude oil price (weekly)</a>
+- <a href="#change-of-metis-effects-calculation-from-march-14-2022"
+  id="toc-change-of-metis-effects-calculation-from-march-14-2022">Change
+  of METI’s effects calculation from March 14, 2022</a>
+- <a href="#wholesalers-reported-record-profits-for-fy-2021"
+  id="toc-wholesalers-reported-record-profits-for-fy-2021">Wholesalers
+  reported record profits for FY 2021</a>
+- <a
+  href="#do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected"
+  id="toc-do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected">Do
+  wholesalers hand over subsidy fully to retailers as METI expected?</a>
 
-Updated: 2022-11-09
+Updated: 2022-11-16
 
 ## Summary
 
