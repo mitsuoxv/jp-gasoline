@@ -33,7 +33,7 @@ Mitsuo Shiota
   id="toc-do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected">Do
   wholesalers hand over subsidy fully to retailers as METI expected?</a>
 
-Updated: 2022-12-21
+Updated: 2022-12-28
 
 ## Summary
 
@@ -77,8 +77,8 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/wholesale_vs_crude-1.png)<!-- -->
 
-Correlations are 0.9388 if wholesales lead Japan customs by 1 month,
-0.9446 if wholesales is concurrent with Japan customs, and 0.9174 if
+Correlations are 0.9355 if wholesales lead Japan customs by 1 month,
+0.9409 if wholesales is concurrent with Japan customs, and 0.9125 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs.
 
@@ -86,7 +86,7 @@ wholesales is concurrent with Japan customs.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 20 in 2022 Oct. This may reflect the reduced
+2015 Dec, and is 19 in 2022 Nov. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -106,6 +106,7 @@ from Agency for National Resources Energy.
 | 2022 Aug |                      3.7 |
 | 2022 Sep |                      2.9 |
 | 2022 Oct |                      2.4 |
+| 2022 Nov |                      1.9 |
 
 Retailers’ excess margin (yen / liter)
 
@@ -131,7 +132,7 @@ month ago.
 ![](README_files/figure-gfm/dub_import-1.png)<!-- -->
 
 Correlations are 0.9686 if 0 month lag from Dubai to Japan customs,
-0.9927 if 1 month lag, and 0.977 if 2 months lag. The highest
+0.9927 if 1 month lag, and 0.9769 if 2 months lag. The highest
 correlation is if Japan customs lag Dubai by 1 month.
 
 ![](README_files/figure-gfm/dub_import_diff-1.png)<!-- -->
@@ -287,6 +288,7 @@ gas price exceeds the expected price if subsidy is fully reflected. From
 | 2022 Aug |  133.2 |        84.6 |    34.9 |    53.8 |         23.7 |    127.3 |    5.9 |
 | 2022 Sep |  134.2 |        84.6 |    36.5 |    53.8 |         23.7 |    125.7 |    8.5 |
 | 2022 Oct |  134.1 |        83.3 |    36.1 |    53.8 |         23.7 |    124.7 |    9.4 |
+| 2022 Nov |  133.4 |        82.8 |    32.6 |    53.8 |         23.7 |    127.6 |    5.8 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
 lag of Dubai
@@ -309,6 +311,7 @@ was small.
 | 2022 Aug |  133.2 |        89.9 |    34.9 |    53.8 |         23.7 |    132.6 |    0.6 |
 | 2022 Sep |  134.2 |        82.2 |    36.5 |    53.8 |         23.7 |    123.3 |   10.9 |
 | 2022 Oct |  134.1 |        82.9 |    36.1 |    53.8 |         23.7 |    124.3 |    9.8 |
+| 2022 Nov |  133.4 |        85.0 |    32.6 |    53.8 |         23.7 |    129.9 |    3.5 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
 lag of Dubai
