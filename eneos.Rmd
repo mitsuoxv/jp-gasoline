@@ -62,7 +62,7 @@ import_margin <- import |>
                        16, 18, 26,
                        15, 17, 21,
                        13, 13, 13,
-                       13, 13, 7)
+                       13, 13, 7, NA)
     )
   ) |> 
   bind_rows(import |> filter(date < "2021-04-01")) |> 

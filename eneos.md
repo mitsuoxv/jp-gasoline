@@ -66,7 +66,7 @@ import_margin <- import |>
                        16, 18, 26,
                        15, 17, 21,
                        13, 13, 13,
-                       13, 13, 7)
+                       13, 13, 7, NA)
     )
   ) |> 
   bind_rows(import |> filter(date < "2021-04-01")) |> 
@@ -157,8 +157,6 @@ import_margin |>
 annotate("text", x = yearmonth("2022-04"), y = 95, label = "CIF price\nfrom Japan Customs") +labs(x = NULL, y = "yen per litre",
        title = "Crude oil price")
 ```
-
-    ## Warning: Removed 1 row containing missing values (`geom_line()`).
 
     ## Warning: Removed 4 rows containing missing values (`geom_line()`).
 
