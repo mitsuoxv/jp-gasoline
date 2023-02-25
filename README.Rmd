@@ -30,7 +30,9 @@ I find the current surge in retail prices of gasoline is mainly due to the surge
 
 To give a subsidy to wholesalers may incentivize them to raise their margins even more. This subsidy idea is contrary to that of the Biden Administration, which has begun to investigate oil companies.
 
-## Get gasoline prices
+## Get data
+
+### Gasoline prices
 
 Agency for National Resources Energy under METI publishes gasoline prices in its [web site](https://www.enecho.meti.go.jp/statistics/petroleum_and_lpgas/pl007/results.html#headline1). Although the original retail price data include consumption tax since April 1, 2004, I exclude consumption tax all over the period.
 
@@ -82,6 +84,8 @@ retail_price_month <- retail_price %>%
 
 ```
 
+### Imported crude oil price
+
 I get imported crude oil price data from customs statistics via [e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0).
 
 ```{r get_crude_from_csv, message=FALSE}
@@ -105,7 +109,6 @@ import <- paste0("data/", dir("data/", ".csv")) %>%
   map(~ read_csv(.x) %>% get_crude_oil_price) %>% 
   bind_rows() %>% 
   filter(!is.na(crude_oil_price))
-
 ```
 
 ```{r get_crude_from_pdf, eval=FALSE}
@@ -167,16 +170,10 @@ import_pdf <- map(id_date$statInfId, ~ get_from_pdf(.x)) %>%
   left_join(id_date, by = "statInfId")
 
 save(import_pdf, file = "data/import_from_pdf.rda")
-
 ```
 
-```{r load_pdf_data}
-
+```{r pdf_data_plus_csv_data}
 load(file = "data/import_from_pdf.rda")
-
-```
-
-```{r combine}
 
 import_price <- import_pdf %>% 
   filter(X1 == "30301") %>% 
@@ -190,415 +187,9 @@ import_price <- import_pdf %>%
   mutate(month = yearmonth(date)) %>% 
   as_tsibble(index = month) %>% 
   select(-date)
-
-combo <- retail_price_month %>% 
-  filter_index("2000 Jul" ~ .) %>% 
-  left_join(wholesale_price, by = "month") %>% 
-  left_join(import_price, by = "month") %>% 
-  mutate(
-    crude_plus_tax = crude_oil_price + 53.8,
-    diff_rw = retail_price - wholesale_price,
-    diff_wc = wholesale_price - crude_plus_tax
-    ) %>% 
-  pivot_longer(retail_price:diff_wc) %>% 
-  update_tsibble(key = name)
-
 ```
 
-## Plot retail, wholesale gas and crude oil prices
-
-Yes, both retail and wholesale prices are rising, mainly due to rising imported crude oil prices.
-
-```{r plot1, warning=FALSE}
-
-combo %>% 
-  filter(name %in% c("retail_price", "wholesale_price", "crude_plus_tax")) %>% 
-  autoplot(value) +
-  geom_hline(yintercept = 170/1.1, color = "gray50") +
-  annotate("text", x = yearmonth("2010 Jan"), y = 160, label = "155 (170 including consumption tax)", size = 4) +
-  geom_hline(yintercept = 53.8, color = "gray50") +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "retail_price") %>% 
-              tail(1),
-            hjust = 1, vjust = -0.5) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "wholesale_price") %>% 
-              tail(1),
-            hjust = 1, vjust = -0.5) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "crude_plus_tax") %>% 
-              tail(1),
-            hjust = 1, vjust = -0.5) +
-  annotate("text", x = yearmonth("2010 Jan"), y = 59, label = "53.8 gasoline tax", size = 4) +
-  annotate("text", x = yearmonth("2000 Jan"), y = 110, label = "Retail", size = 4) +
-  annotate("text", x = yearmonth("2001 Jan"), y = 90, label = "Wholesale", size = 4) +
-  annotate("text", x = yearmonth("2003 Jan"), y = 70, label = "Crude oil (right axis)", size = 4) +expand_limits(y = 0) +
-  scale_y_continuous(
-    name = "Yen per litre\n(excluding consumption tax)",
-    sec.axis = sec_axis(~ .x - 53.8)
-  ) +
-  labs(title = "Gasoline and crude oil prices in Japan") +
-  theme(legend.position = "none")
-
-```
-
-```{r wholesale_vs_crude, warning=FALSE}
-
-wholesale_crude <- combo %>% 
-  filter(name %in% c("wholesale_price", "crude_plus_tax")) %>% 
-  pivot_wider(names_from = name, values_from = value) %>% 
-  na.omit()
-
-p_1c <- wholesale_crude %>% 
-  ggplot(aes(lead(crude_plus_tax), wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p0c <- wholesale_crude %>% 
-  ggplot(aes(crude_plus_tax, wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p1c <- wholesale_crude %>% 
-  ggplot(aes(lag(crude_plus_tax), wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p_1c | p0c | p1c
-
-```
-
-Correlations are `r cor(wholesale_crude$crude_plus_tax[-1], wholesale_crude$wholesale_price[-nrow(wholesale_crude)]) %>% round(4)` if wholesales lead Japan customs by 1 month, `r cor(wholesale_crude$crude_plus_tax, wholesale_crude$wholesale_price) %>% round(4)` if wholesales is concurrent with Japan customs, and `r cor(wholesale_crude$crude_plus_tax[-nrow(wholesale_crude)], wholesale_crude$wholesale_price[-1]) %>% round(4)` if wholesales lag Japan customs by 1 month. The highest correlation is if wholesales is concurrent with Japan customs.
-
-## Plot price differences
-
-Differences between retail and wholesale prices have been increasing since 2016. The average difference was `r combo %>% filter(name == "diff_rw") %>% filter_index("2000 Jul" ~ "2015 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2000 Jul to 2015 Dec, and is `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(value) %>% round()` in `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(month)`. This may reflect the reduced competition among retailers. You can see the number of retailers has constantly decreased since around 1995 in the last page of [this material (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf) from Agency for National Resources Energy.
-
-```{r plot2}
-
-combo %>% 
-  filter(name == "diff_rw", !is.na(value)) %>% 
-  autoplot(value) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = . %>% slice_tail(n = 1),
-            hjust = -0.2, vjust = 0) +
-  expand_limits(y = 0) +
-  labs(y = "Yen per litre",
-       title = "Retailers' margin = retail price - wholesale price")
-
-```
-
-```{r mean_diff_2021}
-mean_diff_2021 <- combo %>% 
-  filter(name == "diff_rw", !is.na(value)) %>% 
-  filter(year(month) == 2021) %>% 
-  as_tibble() %>% 
-  summarize(mean_diff = mean(value)) %>% 
-  pull(mean_diff)
-
-combo %>% 
-  filter(name == "diff_rw", !is.na(value)) %>% 
-  mutate(diff_from_mean = value - mean_diff_2021) %>% 
-  select(month, diff_from_mean) %>% 
-  filter(month >= yearmonth("2022 Feb")) %>% 
-  knitr::kable(format = "simple",
-               digits = 1,
-               col.names = c("Month", "Excess over 2021 average"),
-               caption = "Retailers' excess margin (yen / liter)")
-```
-
-The average retailers' margin in 2021 was
-`r mean_diff_2021 %>% round(digits = 1)`. If I subtract it from retailers' margin, I get excess margin above.
-
-
-Differences between wholesale price and imported crude oil price plus gasoline tax have also been increasing. The average difference was `r combo %>% filter(name == "diff_wc") %>% filter_index("2001 Jan" ~ "2014 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2001 Jan to 2014 Dec, and is `r combo %>% filter(name == "diff_wc", !is.na(value), month == yearmonth("2022 Jan")) %>%  pull(value) %>% round()` in 2022 Jan. This may reflect the reduced competition among wholesalers, who have got monopolistic power by consolidation. The decrease from 2022 Feb is due to subsidy.
-
-```{r plot3}
-
-combo %>% 
-  filter(name == "diff_wc", !is.na(value)) %>% 
-  autoplot(value) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = . %>% slice_tail(n = 1),
-            hjust = -0.2, vjust = 0) +
-  labs(y = "Yen per litre",
-       title = "Wholesalers' margin = wholesale price - (imported crude oil price +\ngasoline tax)")
-
-```
-
-## Dubai crude oil price (monthly)
-
-### vs Japan customs import price
-
-Import prices pretty precisely follow Dubai crude oil spot prices of one month ago.
-
-```{r get_dubai_data}
-
-dub_oil <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "1990-01-01")
-
-dub_oil_month <- dub_oil %>% 
-  pivot_wider(names_from = symbol, values_from = price) %>% 
-  mutate(dub_oil_price = POILDUBUSDM * EXJPUS / 158.99) %>% 
-  select(date, dub_oil_price) %>% 
-  mutate(month = yearmonth(date)) %>% 
-  as_tsibble(index = month) %>% 
-  select(-date)
-```
-
-```{r dub_import, warning=FALSE}
-
-dub_import <- dub_oil_month %>% 
-  inner_join(import_price, by = "month") %>% 
-  rename(import_price = crude_oil_price) %>% 
-  filter(!is.na(dub_oil_price), !is.na(import_price))
-
-p0 <- dub_import %>% 
-  ggplot(aes(dub_oil_price, import_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p1 <- dub_import %>% 
-  ggplot(aes(lag(dub_oil_price, 1), import_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p2 <- dub_import %>% 
-  ggplot(aes(lag(dub_oil_price, 2), import_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p0 | p1 | p2
-
-```
-
-Correlations are `r cor(dub_import$dub_oil_price, dub_import$import_price) %>% round(4)` if 0 month lag from Dubai to Japan customs, `r cor(dub_import$dub_oil_price[-251], dub_import$import_price[-1]) %>% round(4)` if 1 month lag, and `r cor(dub_import$dub_oil_price[c(-nrow(dub_import) + 1, -nrow(dub_import))], dub_import$import_price[c(-1, -2)]) %>% round(4)` if 2 months lag. The highest correlation is if Japan customs lag Dubai by 1 month.
-
-```{r dub_import_diff}
-dub_import_diff <- dub_import %>% 
-  mutate(
-    dub_lag_1 = lag(dub_oil_price, 1),
-    diff = import_price - dub_lag_1
-  ) %>% 
-  filter(!is.na(diff))
-
-dub_import_diff %>% 
-  autoplot(diff) +
-  labs(y = "Yen per litre",
-       title = "Import price - one month ago Dubai price")
-```
-
-Import price is higer than Dubai price by 
-`r dub_import_diff %>% 
-  as_tibble() %>% 
-  summarize(mean_diff = mean(diff)) %>% 
-  pull(mean_diff) %>% 
-  round(digits = 2)
-`
-yen per litre on average, probably due to CIF costs.
-
-### vs wholesale gasoline price
-
-```{r dub_wholesale, warning=FALSE}
-
-dub_import_wholesale <- wholesale_price %>% 
-  inner_join(dub_oil_month, by = "month") %>% 
-  filter(!is.na(dub_oil_price), !is.na(wholesale_price)) %>% 
-  filter(month >= yearmonth("2001 Jan"))
-
-p0w <- dub_import_wholesale %>% 
-  ggplot(aes(dub_oil_price, wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p1w <- dub_import_wholesale %>% 
-  ggplot(aes(lag(dub_oil_price, 1), wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p2w <- dub_import_wholesale %>% 
-  ggplot(aes(lag(dub_oil_price, 2), wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p0w | p1w | p2w
-
-```
-
-Wholesale prices follow Dubai crude oil prices of one month ago. Correlations are `r cor(dub_import_wholesale$dub_oil_price, dub_import_wholesale$wholesale_price) %>% round(4)` if 0 month lag from Dubai to wholesalers, `r cor(dub_import_wholesale$dub_oil_price[-nrow(dub_import_wholesale)], dub_import_wholesale$wholesale_price[-1]) %>% round(4)` if 1 month lag, and `r cor(dub_import_wholesale$dub_oil_price[c(-nrow(dub_import_wholesale) + 1, -nrow(dub_import_wholesale))], dub_import_wholesale$wholesale_price[c(-1, -2)]) %>% round(4)` if 2 months lag. The highest correlation is if wholesales lag Dubai by 1 month.
-
-```{r dub_import_wholesale_diff}
-
-dub_import_wholesale_diff <- dub_import_wholesale %>% 
-  mutate(
-    dub_oil_price_lag = lag(dub_oil_price),
-    gas_tax = 53.8,
-    diff = wholesale_price - dub_oil_price_lag - gas_tax
-  ) %>% 
-  filter(!is.na(diff))
-
-dub_import_wholesale_diff %>% 
-  autoplot(diff) +
-  geom_text(aes(label = month), 
-            vjust = 0, hjust = 1,
-            data = . %>% slice_tail(n = 1)) +
-  geom_text(aes(label = round(diff, digits = 0)), 
-            vjust = 0, hjust = 0,
-            data = . %>% slice_tail(n = 1)) +
-  labs(y = "Yen per litre",
-       title = "Historical wholesalers' margin = wholesale price -\n(one month ago Dubai crude oil price + gas tax)")
-
-```
-
-### vs retail gasoline price
-
-```{r dub_retail, warning=FALSE}
-
-dub_import_retail <- retail_price_month %>% 
-  mutate(retail_price = 1.1 * retail_price) %>% # include 10 percent consumption tax
-  inner_join(dub_oil_month, by = "month") %>% 
-  filter(!is.na(dub_oil_price), !is.na(retail_price)) %>% 
-  filter(month >= yearmonth("2001 Jan"))
-
-p0r <- dub_import_retail %>% 
-  ggplot(aes(dub_oil_price, retail_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p1r <- dub_import_retail %>% 
-  ggplot(aes(lag(dub_oil_price, 1), retail_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p2r <- dub_import_retail %>% 
-  ggplot(aes(lag(dub_oil_price, 2), retail_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p0r | p1r | p2r
-
-```
-
-Retail prices (including constant 10 percent consumption tax) also follow Dubai crude oil prices of one month ago. Correlations are `r cor(dub_import_retail$dub_oil_price, dub_import_retail$retail_price) %>% round(4)` if 0 month lag from Dubai to Japan customs, `r cor(dub_import_retail$dub_oil_price[-nrow(dub_import_retail)], dub_import_retail$retail_price[-1]) %>% round(4)` if 1 month lag, and `r cor(dub_import_retail$dub_oil_price[c(-nrow(dub_import_retail) + 1, -nrow(dub_import_retail))], dub_import_retail$retail_price[c(-1, -2)]) %>% round(4)` if 2 months lag. The highest correlation is if retails lag Dubai by 1 month.
-
-```{r dub_import_retail_diff}
-
-dub_import_retail_diff <- dub_import_retail %>% 
-  mutate(
-    dub_oil_price_lag = lag(dub_oil_price),
-    diff = retail_price - dub_oil_price_lag
-  ) %>% 
-  filter(!is.na(diff))
-
-dub_import_retail_diff %>% 
-  autoplot(diff) +
-  geom_text(aes(label = month), 
-            vjust = 0, hjust = 1,
-            data = . %>% slice_tail(n = 1)) +
-  geom_text(aes(label = round(diff, digits = 0)), 
-            vjust = 0, hjust = 0,
-            data = . %>% slice_tail(n = 1)) +
-  labs(y = "Yen per litre",
-       title = "Difference between retail price (including constant 10 percent\nconsumption tax) and one month ago Dubai crude oil price")
-
-```
-
-The most recent difference between retail price (including constant 10 percent\\nconsumption tax) and one month ago Dubai crude oil price is `r dub_import_retail_diff %>% tail(1) %>% pull(diff) %>% round(2)` at `r dub_import_retail_diff %>% tail(1) %>% pull(month) %>% as.character()`
-
-## Dubai crude oil price (weekly)
-
-I get daily data from [oilprice.com](https://oilprice.com/jp/%E5%8E%9F%E6%B2%B9%E4%BE%A1%E6%A0%BC%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88).
-
-```{r get_daily_dubai}
-
-dubai_daily <- tribble(
-  ~date, ~price,
-  "2021-11-22", 80.548,
-  "2021-11-24", 81.201,
-  "2021-11-26", 80.084,
-  "2021-11-29", 80.305,
-  "2021-11-30", 80.276,
-  "2021-12-02", 80.276,
-  "2021-12-03", 68.909,
-  "2021-12-06", 71.654,
-  "2021-12-08", 73.693,
-  "2021-12-10", 73.189,
-  "2021-12-14", 72.223,
-  "2021-12-15", 72.383,
-  "2021-12-17", 72.432,
-  "2021-12-20", 71.655,
-  "2021-12-22", 72.71,
-  "2021-12-27", 73.2,
-  "2021-12-30", 73.19,
-  "2021-12-31", 73.185,
-  "2022-01-03", 73.185,
-  "2022-01-04", 73.185,
-  "2022-01-05", 78.812,
-  "2022-01-06", 79.695,
-  "2022-01-07", 79.535,
-  "2022-01-07", 79.535,
-  "2022-01-10", 78.887,
-  "2022-01-11", 80.789,
-  "2022-01-12", 81.342,
-  "2022-01-13", 81.297,
-  "2022-01-14", 82.269,
-  "2022-01-18", 83.221,
-  "2022-01-19", 83.559,
-  "2022-01-20", 83.496,
-  "2022-01-21", 83.291,
-  "2022-01-24", 82.868,
-  "2022-01-25", 83.213,
-  "2022-01-26", 83.389,
-  "2022-01-27", 83.333,
-  "2022-01-28", 83.362,
-  "2022-01-31", 83.455,
-  "2022-02-01", 83.455,
-  "2022-02-04", 91.056,
-  "2022-02-07", 90.757,
-  "2022-02-08", 89.282,
-  "2022-02-09", 89.883,
-  "2022-02-10", 89.918,
-  "2022-02-11", 91.79,
-  "2022-02-14", 92.605,
-  "2022-02-15", 90.859,
-  "2022-02-16", 91.558,
-  "2022-02-18", 90.897,
-  "2022-02-22", 91.838,
-  "2022-02-24", 92.074,
-  "2022-02-25", 91.928,
-  "2022-02-28", 92.34,
-  "2022-03-01", 92.34,
-  "2022-03-02", 92.34,
-  "2022-03-03", 106.578,
-  "2022-03-04", 114.95,
-  "2022-03-07", 118.18,
-  "2022-03-08", 122.532,
-  "2022-03-09", 110.86
-) %>% 
-  mutate(date = as.Date(date))
-
-yen_dollar_daily <- tq_get(c("DEXJPUS"), get = "economic.data", from = "2020-01-01") %>% 
-  select(-symbol)
-
-yen_dollar_daily <- yen_dollar_daily %>% 
-  rename(yen_dollar_rate = price)
-
-dubai_daily2 <- dubai_daily %>% 
-  left_join(yen_dollar_daily, by = "date") %>% 
-  mutate(dubai_oil_price = price * yen_dollar_rate / 158.99) %>% 
-  select(date, dubai_oil_price)
-
-dubai_weekly <- dubai_daily2 %>% 
-  mutate(week = yearweek(date)) %>% 
-  group_by(week) %>% 
-  summarize(price = mean(dubai_oil_price, na.rm = TRUE))
-
-```
+### Subsidy
 
 [METI publishes](https://nenryo-gekihenkanwa.jp/pdf/result_rev8.pdf) Dubai crude oil prices, counterfactual gasoline prices without subsidies, actual gasoline prieces and effects of subsidies, which are differences between counterfacual and actual, all in the units of yen / litre every week.
 
@@ -733,6 +324,286 @@ meti_subsidy <- tribble(
   fill(subsidy, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
   select(-start_date)
+
+meti_subsidy_monthly <- meti_subsidy %>% 
+  mutate(
+    subsidy_lag2 = lag(subsidy, 2),
+    month = yearmonth(week)
+    ) %>% 
+  group_by(month) %>% 
+  summarize(subsidy = mean(subsidy_lag2))
+```
+
+```{r combine}
+combo <- retail_price_month %>% 
+  filter_index("2000 Jul" ~ .) %>% 
+  left_join(wholesale_price, by = "month") %>% 
+  left_join(import_price, by = "month") %>% 
+  left_join(meti_subsidy_monthly, by = "month") %>% 
+  replace_na(list(subsidy = 0)) %>%
+  mutate(
+    crude_1mo_ahead_tax_subsidy = lead(crude_oil_price) + 53.8 - subsidy,
+    diff_rw = retail_price - wholesale_price,
+    diff_wc = wholesale_price - crude_1mo_ahead_tax_subsidy
+    ) %>%
+  pivot_longer(retail_price:diff_wc) %>% 
+  update_tsibble(key = name)
+```
+
+## Plot retail, wholesale gas and crude oil prices
+
+Yes, both retail and wholesale prices are rising, mainly due to rising imported crude oil prices.
+
+```{r plot1, warning=FALSE}
+
+combo %>% 
+  filter(name %in% c("retail_price", "wholesale_price",
+                     "crude_1mo_ahead_tax_subsidy")) %>% 
+  autoplot(value) +
+  geom_hline(yintercept = 170/1.1, color = "gray50") +
+  annotate("text", x = yearmonth("2010 Jan"), y = 160, label = "155 (170 including consumption tax)", size = 4) +
+  geom_hline(yintercept = 53.8, color = "gray50") +
+  geom_text(aes(label = month(month, label = TRUE)),
+            data = combo %>% 
+              filter(!is.na(value)) %>% 
+              filter(name == "retail_price") %>% 
+              tail(1),
+            hjust = 1, vjust = -0.5) +
+  geom_text(aes(label = month(month, label = TRUE)),
+            data = combo %>% 
+              filter(!is.na(value)) %>% 
+              filter(name == "wholesale_price") %>% 
+              tail(1),
+            hjust = 1, vjust = -0.5) +
+  geom_text(aes(label = month(month, label = TRUE)),
+            data = combo %>% 
+              filter(!is.na(value)) %>% 
+              filter(name == "crude_plus_tax") %>% 
+              tail(1),
+            hjust = 1, vjust = -0.5) +
+  annotate("text", x = yearmonth("2010 Jan"), y = 59, label = "53.8 gasoline tax", size = 4) +
+  annotate("text", x = yearmonth("2000 Jan"), y = 110, label = "Retail", size = 4) +
+  annotate("text", x = yearmonth("2001 Jan"), y = 90, label = "Wholesale", size = 4) +
+  annotate("text", x = yearmonth("2001 Jan"), y = 70, label = "Imported crude oil price one month ahead, minus subsidy (right axis)", size = 4, hjust = 0) +
+  expand_limits(y = 0) +
+  scale_y_continuous(
+    name = "Yen per litre\n(excluding consumption tax)",
+    sec.axis = sec_axis(~ .x - 53.8)
+  ) +
+  labs(title = "Gasoline and imported crude oil prices in Japan") +
+theme(legend.position = "none")
+```
+
+```{r wholesale_vs_crude, warning=FALSE}
+
+wholesale_crude <- combo %>% 
+  filter(name %in% c("wholesale_price", "crude_oil_price")) %>% 
+  pivot_wider(names_from = name, values_from = value) %>% 
+  na.omit()
+
+p_1c <- wholesale_crude %>% 
+  ggplot(aes(lead(crude_oil_price), wholesale_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p0c <- wholesale_crude %>% 
+  ggplot(aes(crude_oil_price, wholesale_price)) +
+  geom_point(alpha = 0.2) +
+  coord_fixed()
+
+p1c <- wholesale_crude %>% 
+ggplot(aes(lag(crude_oil_price), wholesale_price)) +
+  geom_point(alpha = 0.2) +
+coord_fixed()
+```
+
+Correlations are `r cor(wholesale_crude$crude_oil_price[-1], wholesale_crude$wholesale_price[-nrow(wholesale_crude)]) %>% round(4)` if wholesales lead Japan customs by 1 month, `r cor(wholesale_crude$crude_oil_price, wholesale_crude$wholesale_price) %>% round(4)` if wholesales is concurrent with Japan customs, and `r cor(wholesale_crude$crude_oil_price[-nrow(wholesale_crude)], wholesale_crude$wholesale_price[-1]) %>% round(4)` if wholesales lag Japan customs by 1 month. The highest correlation is if wholesales is concurrent with Japan customs. However, METI gives subsidy assuming that wholesales lead Japan customs by 1 month. So I regard imported crude oil price one month ahead, plus tax and minus subsidy as wholesalers' cost.
+
+```{r wholesale_vs_crude_plot, warning=FALSE}
+p_1c + p0c + p1c +
+  plot_layout(nrow = 1) +
+  plot_annotation(
+  title = "Wholesale price vs imported crude oil price (lead, concurrent and lag)"
+)
+```
+
+## Plot price differences
+
+### Retailers' margin
+
+Differences between retail and wholesale prices have been increasing since 2016. The average difference was `r combo %>% filter(name == "diff_rw") %>% filter_index("2000 Jul" ~ "2015 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2000 Jul to 2015 Dec, and is `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(value) %>% round()` in `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(month)`. This may reflect the reduced competition among retailers. You can see the number of retailers has constantly decreased since around 1995 in the last page of [this material (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf) from Agency for National Resources Energy.
+
+```{r retailers_margin_plot}
+
+combo %>% 
+  filter(name == "diff_rw", !is.na(value)) %>% 
+  filter(month >= yearmonth("2010 Jan")) %>%
+  autoplot(value) +
+  geom_text(aes(label = month(month, label = TRUE)),
+            data = . %>% slice_tail(n = 1),
+            hjust = -0.2, vjust = 0) +
+  expand_limits(y = 0) +
+  labs(y = "Yen per litre",
+       title = "Retailers' margin = retail price - wholesale price")
+
+```
+
+```{r retailers_margin_table}
+mean_rw_diff_2021 <- combo %>% 
+  filter(name == "diff_rw", !is.na(value)) %>% 
+  filter(year(month) == 2021) %>% 
+  as_tibble() %>% 
+  summarize(mean_diff = mean(value)) %>% 
+  pull(mean_diff)
+
+combo %>% 
+  filter(name == "diff_rw", !is.na(value)) %>% 
+  mutate(
+    usual_margin = mean_rw_diff_2021,
+    diff_from_mean = value - usual_margin
+    ) %>% 
+  select(-name) %>% 
+  filter(month >= yearmonth("2022 Feb")) %>% 
+  knitr::kable(format = "simple",
+               digits = 1,
+               col.names = c("Month", "Margin", "Usual margin","Excess margin"),
+               caption = "Retailers' excess margin (yen / liter)")
+```
+
+The average retailers' margin in 2021 was
+`r mean_rw_diff_2021 %>% round(digits = 1)`. If I subtract it from retailers' margin, I get excess margin above.
+
+### Wholesalers' margin over imported crude oil price one month ahead plus tax minus subsidy
+
+Differences between wholesale price and imported crude oil price one month ahead plus gasoline tax minus subsidy have also been increasing. This may reflect the reduced competition among wholesalers, who have got monopolistic power by consolidation.
+
+```{r wholesalers_margin_plot}
+
+combo %>% 
+  filter(name == "diff_wc", !is.na(value)) %>% 
+  filter(month >= yearmonth("2010 Jan")) %>%
+  autoplot(value) +
+  geom_text(aes(label = month(month, label = TRUE)),
+            data = . %>% slice_tail(n = 1),
+            hjust = -0.2, vjust = 0) +
+  labs(y = "Yen per litre",
+       title = "Wholesalers' margin = wholesale price\n- imported crude oil price one month ahead\n- gasoline tax\n+ subsidy")
+
+```
+
+```{r wholesalers_margin_table}
+mean_wc_diff_2021 <- combo %>% 
+  filter(name == "diff_wc", !is.na(value)) %>% 
+  filter(year(month) == 2021) %>% 
+  as_tibble() %>% 
+  summarize(mean_diff = mean(value)) %>% 
+  pull(mean_diff)
+
+combo %>% 
+  filter(name == "diff_wc", !is.na(value)) %>% 
+  mutate(
+    usual_margin = mean_wc_diff_2021,
+    diff_from_mean = value - usual_margin
+    ) %>% 
+  select(-name) %>% 
+  filter(month >= yearmonth("2022 Feb")) %>% 
+  knitr::kable(format = "simple",
+               digits = 1,
+               col.names = c("Month", "Margin", "Usual margin","Excess margin"),
+               caption = "Wholesalers' excess margin (yen / liter)")
+```
+
+The average wholesalers' margin in 2021 was
+`r mean_wc_diff_2021 %>% round(digits = 1)`. If I subtract it from retailers' margin, I get excess margin above.
+
+## Dubai crude oil price (weekly)
+
+I get daily data from [oilprice.com](https://oilprice.com/jp/%E5%8E%9F%E6%B2%B9%E4%BE%A1%E6%A0%BC%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88).
+
+```{r get_daily_dubai}
+
+dubai_daily <- tribble(
+  ~date, ~price,
+  "2021-11-22", 80.548,
+  "2021-11-24", 81.201,
+  "2021-11-26", 80.084,
+  "2021-11-29", 80.305,
+  "2021-11-30", 80.276,
+  "2021-12-02", 80.276,
+  "2021-12-03", 68.909,
+  "2021-12-06", 71.654,
+  "2021-12-08", 73.693,
+  "2021-12-10", 73.189,
+  "2021-12-14", 72.223,
+  "2021-12-15", 72.383,
+  "2021-12-17", 72.432,
+  "2021-12-20", 71.655,
+  "2021-12-22", 72.71,
+  "2021-12-27", 73.2,
+  "2021-12-30", 73.19,
+  "2021-12-31", 73.185,
+  "2022-01-03", 73.185,
+  "2022-01-04", 73.185,
+  "2022-01-05", 78.812,
+  "2022-01-06", 79.695,
+  "2022-01-07", 79.535,
+  "2022-01-07", 79.535,
+  "2022-01-10", 78.887,
+  "2022-01-11", 80.789,
+  "2022-01-12", 81.342,
+  "2022-01-13", 81.297,
+  "2022-01-14", 82.269,
+  "2022-01-18", 83.221,
+  "2022-01-19", 83.559,
+  "2022-01-20", 83.496,
+  "2022-01-21", 83.291,
+  "2022-01-24", 82.868,
+  "2022-01-25", 83.213,
+  "2022-01-26", 83.389,
+  "2022-01-27", 83.333,
+  "2022-01-28", 83.362,
+  "2022-01-31", 83.455,
+  "2022-02-01", 83.455,
+  "2022-02-04", 91.056,
+  "2022-02-07", 90.757,
+  "2022-02-08", 89.282,
+  "2022-02-09", 89.883,
+  "2022-02-10", 89.918,
+  "2022-02-11", 91.79,
+  "2022-02-14", 92.605,
+  "2022-02-15", 90.859,
+  "2022-02-16", 91.558,
+  "2022-02-18", 90.897,
+  "2022-02-22", 91.838,
+  "2022-02-24", 92.074,
+  "2022-02-25", 91.928,
+  "2022-02-28", 92.34,
+  "2022-03-01", 92.34,
+  "2022-03-02", 92.34,
+  "2022-03-03", 106.578,
+  "2022-03-04", 114.95,
+  "2022-03-07", 118.18,
+  "2022-03-08", 122.532,
+  "2022-03-09", 110.86
+) %>% 
+  mutate(date = as.Date(date))
+
+yen_dollar_daily <- tq_get(c("DEXJPUS"), get = "economic.data", from = "2020-01-01") %>% 
+  select(-symbol)
+
+yen_dollar_daily <- yen_dollar_daily %>% 
+  rename(yen_dollar_rate = price)
+
+dubai_daily2 <- dubai_daily %>% 
+  left_join(yen_dollar_daily, by = "date") %>% 
+  mutate(dubai_oil_price = price * yen_dollar_rate / 158.99) %>% 
+  select(date, dubai_oil_price)
+
+dubai_weekly <- dubai_daily2 %>% 
+  mutate(week = yearweek(date)) %>% 
+  group_by(week) %>% 
+  summarize(price = mean(dubai_oil_price, na.rm = TRUE))
+
 ```
 
 Weekly prices are not so different between oilprice.com and METI.
@@ -861,7 +732,7 @@ normal_margin <- retail_price_weekly %>%
 
 Above calculation assumes there is a constant margin between Dubai crude oil prices and retail prices. Lag 0 to 5 assumes margins `r normal_margin %>% round(1)` respectively.
 
-Lag 2 assumes `r normal_margin[3] %>% round(1)`, and it is close to the most recent monthly margin `r dub_import_retail_diff %>% tail(1) %>% pull(diff) %>% round(2)` at `r dub_import_retail_diff %>% tail(1) %>% pull(month) %>% as.character()`. Let us assume this margin of `r normal_margin[3] %>% round(1)` over all lags between Dubai crude oil prices and retail prices.
+Lag 2 assumes `r normal_margin[3] %>% round(1)`. Let us assume this margin of `r normal_margin[3] %>% round(1)` over all lags between Dubai crude oil prices and retail prices.
 
 ```{r effect_by_lag2}
 
@@ -999,19 +870,11 @@ p_old | p_new
 
 I tweeted about this [here](https://twitter.com/mitsuoxv/status/1519833594046283781).
 
-## Do wholesalers hand over subsidy fully to retailers as METI expected?
+## Wholesalers' margin over Dubai crude oil price
 
 Although I disagree to the METI assumptions, first, I assume them to check whether wholesalers are acting as METI expected. So I assume that Dubai crude oil price and subsidy will be reflected to wholesale gas price 10 days (2 weeks) later, and that the usual margin of wholesalers is the same as that of 2022 Jan, which is higher than average but within the historical range. Then, I calculate how much the actual wholesale gas price exceeds the expected price if subsidy is fully reflected. From 2022 Jan to 2022 Apr, the excesses are small.
 
 ```{r}
-meti_subsidy_monthly <- meti_subsidy %>% 
-  mutate(
-    subsidy_lag2 = lag(subsidy, 2),
-    month = yearmonth(week)
-    ) %>% 
-  group_by(month) %>% 
-  summarize(subsidy = mean(subsidy_lag2))
-
 dubai_monthly <- dubai_weekly2 %>% 
   mutate(
     dubai_lag = lag(dubai, 2),

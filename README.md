@@ -4,22 +4,23 @@ Mitsuo Shiota
 2021-11-17
 
 - <a href="#summary" id="toc-summary">Summary</a>
-- <a href="#get-gasoline-prices" id="toc-get-gasoline-prices">Get gasoline
-  prices</a>
+- <a href="#get-data" id="toc-get-data">Get data</a>
+  - <a href="#gasoline-prices" id="toc-gasoline-prices">Gasoline prices</a>
+  - <a href="#imported-crude-oil-price"
+    id="toc-imported-crude-oil-price">Imported crude oil price</a>
+  - <a href="#subsidy" id="toc-subsidy">Subsidy</a>
 - <a href="#plot-retail-wholesale-gas-and-crude-oil-prices"
   id="toc-plot-retail-wholesale-gas-and-crude-oil-prices">Plot retail,
   wholesale gas and crude oil prices</a>
 - <a href="#plot-price-differences" id="toc-plot-price-differences">Plot
   price differences</a>
-- <a href="#dubai-crude-oil-price-monthly"
-  id="toc-dubai-crude-oil-price-monthly">Dubai crude oil price
-  (monthly)</a>
-  - <a href="#vs-japan-customs-import-price"
-    id="toc-vs-japan-customs-import-price">vs Japan customs import price</a>
-  - <a href="#vs-wholesale-gasoline-price"
-    id="toc-vs-wholesale-gasoline-price">vs wholesale gasoline price</a>
-  - <a href="#vs-retail-gasoline-price" id="toc-vs-retail-gasoline-price">vs
-    retail gasoline price</a>
+  - <a href="#retailers-margin" id="toc-retailers-margin">Retailers’
+    margin</a>
+  - <a
+    href="#wholesalers-margin-over-imported-crude-oil-price-one-month-ahead-plus-tax-minus-subsidy"
+    id="toc-wholesalers-margin-over-imported-crude-oil-price-one-month-ahead-plus-tax-minus-subsidy">Wholesalers’
+    margin over imported crude oil price one month ahead plus tax minus
+    subsidy</a>
 - <a href="#dubai-crude-oil-price-weekly"
   id="toc-dubai-crude-oil-price-weekly">Dubai crude oil price (weekly)</a>
 - <a href="#change-of-metis-effects-calculation-from-march-14-2022"
@@ -28,12 +29,11 @@ Mitsuo Shiota
 - <a href="#wholesalers-reported-record-profits-for-fy-2021"
   id="toc-wholesalers-reported-record-profits-for-fy-2021">Wholesalers
   reported record profits for FY 2021</a>
-- <a
-  href="#do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected"
-  id="toc-do-wholesalers-hand-over-subsidy-fully-to-retailers-as-meti-expected">Do
-  wholesalers hand over subsidy fully to retailers as METI expected?</a>
+- <a href="#wholesalers-margin-over-dubai-crude-oil-price"
+  id="toc-wholesalers-margin-over-dubai-crude-oil-price">Wholesalers’
+  margin over Dubai crude oil price</a>
 
-Updated: 2023-02-22
+Updated: 2023-02-25
 
 ## Summary
 
@@ -57,7 +57,9 @@ To give a subsidy to wholesalers may incentivize them to raise their
 margins even more. This subsidy idea is contrary to that of the Biden
 Administration, which has begun to investigate oil companies.
 
-## Get gasoline prices
+## Get data
+
+### Gasoline prices
 
 Agency for National Resources Energy under METI publishes gasoline
 prices in its [web
@@ -65,8 +67,18 @@ site](https://www.enecho.meti.go.jp/statistics/petroleum_and_lpgas/pl007/results
 Although the original retail price data include consumption tax since
 April 1, 2004, I exclude consumption tax all over the period.
 
+### Imported crude oil price
+
 I get imported crude oil price data from customs statistics via
 [e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0).
+
+### Subsidy
+
+[METI publishes](https://nenryo-gekihenkanwa.jp/pdf/result_rev8.pdf)
+Dubai crude oil prices, counterfactual gasoline prices without
+subsidies, actual gasoline prieces and effects of subsidies, which are
+differences between counterfacual and actual, all in the units of yen /
+litre every week.
 
 ## Plot retail, wholesale gas and crude oil prices
 
@@ -75,14 +87,19 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
-![](README_files/figure-gfm/wholesale_vs_crude-1.png)<!-- -->
-
 Correlations are 0.9343 if wholesales lead Japan customs by 1 month,
 0.9399 if wholesales is concurrent with Japan customs, and 0.9095 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
-wholesales is concurrent with Japan customs.
+wholesales is concurrent with Japan customs. However, METI gives subsidy
+assuming that wholesales lead Japan customs by 1 month. So I regard
+imported crude oil price one month ahead, plus tax and minus subsidy as
+wholesalers’ cost.
+
+![](README_files/figure-gfm/wholesale_vs_crude_plot-1.png)<!-- -->
 
 ## Plot price differences
+
+### Retailers’ margin
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
@@ -93,91 +110,59 @@ material
 (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf)
 from Agency for National Resources Energy.
 
-![](README_files/figure-gfm/plot2-1.png)<!-- -->
+![](README_files/figure-gfm/retailers_margin_plot-1.png)<!-- -->
 
-| Month    | Excess over 2021 average |
-|:---------|-------------------------:|
-| 2022 Feb |                      0.4 |
-| 2022 Mar |                      1.6 |
-| 2022 Apr |                      2.8 |
-| 2022 May |                      3.9 |
-| 2022 Jun |                      0.5 |
-| 2022 Jul |                      5.1 |
-| 2022 Aug |                      3.7 |
-| 2022 Sep |                      2.9 |
-| 2022 Oct |                      2.4 |
-| 2022 Nov |                      1.9 |
-| 2022 Dec |                      1.5 |
+| Month    | Margin | Usual margin | Excess margin |
+|:---------|-------:|-------------:|--------------:|
+| 2022 Feb |   17.5 |         17.2 |           0.4 |
+| 2022 Mar |   18.7 |         17.2 |           1.6 |
+| 2022 Apr |   20.0 |         17.2 |           2.8 |
+| 2022 May |   21.1 |         17.2 |           3.9 |
+| 2022 Jun |   17.7 |         17.2 |           0.5 |
+| 2022 Jul |   22.3 |         17.2 |           5.1 |
+| 2022 Aug |   20.9 |         17.2 |           3.7 |
+| 2022 Sep |   20.1 |         17.2 |           2.9 |
+| 2022 Oct |   19.6 |         17.2 |           2.4 |
+| 2022 Nov |   19.1 |         17.2 |           1.9 |
+| 2022 Dec |   18.7 |         17.2 |           1.5 |
 
 Retailers’ excess margin (yen / liter)
 
 The average retailers’ margin in 2021 was 17.2. If I subtract it from
 retailers’ margin, I get excess margin above.
 
-Differences between wholesale price and imported crude oil price plus
-gasoline tax have also been increasing. The average difference was 16
-yen per litre from 2001 Jan to 2014 Dec, and is 23 in 2022 Jan. This may
-reflect the reduced competition among wholesalers, who have got
-monopolistic power by consolidation. The decrease from 2022 Feb is due
-to subsidy.
+### Wholesalers’ margin over imported crude oil price one month ahead plus tax minus subsidy
 
-![](README_files/figure-gfm/plot3-1.png)<!-- -->
+Differences between wholesale price and imported crude oil price one
+month ahead plus gasoline tax minus subsidy have also been increasing.
+This may reflect the reduced competition among wholesalers, who have got
+monopolistic power by consolidation.
 
-## Dubai crude oil price (monthly)
+![](README_files/figure-gfm/wholesalers_margin_plot-1.png)<!-- -->
 
-### vs Japan customs import price
+| Month    | Margin | Usual margin | Excess margin |
+|:---------|-------:|-------------:|--------------:|
+| 2022 Feb |   22.6 |         19.8 |           2.8 |
+| 2022 Mar |   19.2 |         19.8 |          -0.6 |
+| 2022 Apr |   19.1 |         19.8 |          -0.7 |
+| 2022 May |   18.3 |         19.8 |          -1.5 |
+| 2022 Jun |   25.1 |         19.8 |           5.2 |
+| 2022 Jul |   22.8 |         19.8 |           3.0 |
+| 2022 Aug |   16.7 |         19.8 |          -3.1 |
+| 2022 Sep |   20.1 |         19.8 |           0.3 |
+| 2022 Oct |   24.0 |         19.8 |           4.1 |
+| 2022 Nov |   29.8 |         19.8 |          10.0 |
+| 2022 Dec |   23.9 |         19.8 |           4.1 |
 
-Import prices pretty precisely follow Dubai crude oil spot prices of one
-month ago.
+Wholesalers’ excess margin (yen / liter)
 
-![](README_files/figure-gfm/dub_import-1.png)<!-- -->
-
-Correlations are 0.9676 if 0 month lag from Dubai to Japan customs,
-0.991 if 1 month lag, and 0.9774 if 2 months lag. The highest
-correlation is if Japan customs lag Dubai by 1 month.
-
-![](README_files/figure-gfm/dub_import_diff-1.png)<!-- -->
-
-Import price is higer than Dubai price by 2.29 yen per litre on average,
-probably due to CIF costs.
-
-### vs wholesale gasoline price
-
-![](README_files/figure-gfm/dub_wholesale-1.png)<!-- -->
-
-Wholesale prices follow Dubai crude oil prices of one month ago.
-Correlations are 0.9445 if 0 month lag from Dubai to wholesalers, 0.9537
-if 1 month lag, and 0.9239 if 2 months lag. The highest correlation is
-if wholesales lag Dubai by 1 month.
-
-![](README_files/figure-gfm/dub_import_wholesale_diff-1.png)<!-- -->
-
-### vs retail gasoline price
-
-![](README_files/figure-gfm/dub_retail-1.png)<!-- -->
-
-Retail prices (including constant 10 percent consumption tax) also
-follow Dubai crude oil prices of one month ago. Correlations are 0.934
-if 0 month lag from Dubai to Japan customs, 0.9534 if 1 month lag, and
-0.9323 if 2 months lag. The highest correlation is if retails lag Dubai
-by 1 month.
-
-![](README_files/figure-gfm/dub_import_retail_diff-1.png)<!-- -->
-
-The most recent difference between retail price (including constant 10
-percent\nconsumption tax) and one month ago Dubai crude oil price is
-102.93 at 2023 Jan
+The average wholesalers’ margin in 2021 was 19.8. If I subtract it from
+retailers’ margin, I get excess margin above.
 
 ## Dubai crude oil price (weekly)
 
 I get daily data from
 [oilprice.com](https://oilprice.com/jp/%E5%8E%9F%E6%B2%B9%E4%BE%A1%E6%A0%BC%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88).
-
-[METI publishes](https://nenryo-gekihenkanwa.jp/pdf/result_rev8.pdf)
-Dubai crude oil prices, counterfactual gasoline prices without
-subsidies, actual gasoline prieces and effects of subsidies, which are
-differences between counterfacual and actual, all in the units of yen /
-litre every week.
 
 Weekly prices are not so different between oilprice.com and METI.
 
@@ -212,8 +197,7 @@ Above calculation assumes there is a constant margin between Dubai crude
 oil prices and retail prices. Lag 0 to 5 assumes margins 107.3, 107.6,
 110.8, 112.4, 118.5, 118.5 respectively.
 
-Lag 2 assumes 110.8, and it is close to the most recent monthly margin
-102.93 at 2023 Jan. Let us assume this margin of 110.8 over all lags
+Lag 2 assumes 110.8. Let us assume this margin of 110.8 over all lags
 between Dubai crude oil prices and retail prices.
 
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
@@ -266,7 +250,7 @@ and [here
 I tweeted about this
 [here](https://twitter.com/mitsuoxv/status/1519833594046283781).
 
-## Do wholesalers hand over subsidy fully to retailers as METI expected?
+## Wholesalers’ margin over Dubai crude oil price
 
 Although I disagree to the METI assumptions, first, I assume them to
 check whether wholesalers are acting as METI expected. So I assume that
