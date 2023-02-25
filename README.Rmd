@@ -334,19 +334,35 @@ meti_subsidy_monthly <- meti_subsidy %>%
   summarize(subsidy = mean(subsidy_lag2))
 ```
 
+### Dubai crude oil price (monthly)
+
+I get monthly Dubai crude oil prices in USD / barrel and exchange rates in JPY / USD from [FRED by St. Louis FRB](https://fred.stlouisfed.org/), and transform them into JPY / litre using 1 barrel = 158.987 litre.
+
+```{r dubai_monthly}
+dubai_monthly <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "2000-01-01")  %>%
+  pivot_wider(names_from = symbol, values_from = price) %>%
+  mutate(
+    dubai = POILDUBUSDM * EXJPUS / 158.987,
+    month = yearmonth(date)
+    ) %>%
+  select(month, dubai)
+```
+
 ```{r combine}
 combo <- retail_price_month %>% 
   filter_index("2000 Jul" ~ .) %>% 
   left_join(wholesale_price, by = "month") %>% 
   left_join(import_price, by = "month") %>% 
   left_join(meti_subsidy_monthly, by = "month") %>% 
+  left_join(dubai_monthly, by = "month") %>%
   replace_na(list(subsidy = 0)) %>%
   mutate(
     crude_1mo_ahead_tax_subsidy = lead(crude_oil_price) + 53.8 - subsidy,
     diff_rw = retail_price - wholesale_price,
-    diff_wc = wholesale_price - crude_1mo_ahead_tax_subsidy
+    diff_wc = wholesale_price - crude_1mo_ahead_tax_subsidy,
+    diff_cd = lead(crude_oil_price) - dubai
     ) %>%
-  pivot_longer(retail_price:diff_wc) %>% 
+  pivot_longer(retail_price:diff_cd) %>% 
   update_tsibble(key = name)
 ```
 
@@ -515,6 +531,22 @@ combo %>%
 
 The average wholesalers' margin in 2021 was
 `r mean_wc_diff_2021 %>% round(digits = 1)`. If I subtract it from retailers' margin, I get excess margin above.
+
+### Difference between CIF and FOB
+
+Difference between CIF and FOB has widened since 2021, probably because Russian invasion of Ukraine and depreciated yen have raised insurance and transport fees.
+
+```{r cif_fob_plot}
+combo %>% 
+  filter(name == "diff_cd", !is.na(value)) %>% 
+  filter(month >= yearmonth("2010 Jan")) %>%
+  autoplot(value) +
+  geom_text(aes(label = month(month, label = TRUE)),
+            data = . %>% slice_tail(n = 1),
+            hjust = -0.2, vjust = 0) +
+  labs(y = "Yen per litre",
+       title = "Imported crude oil price 1 month ahead (CIF)\n- Dubai crude oil price (FOB)")
+```
 
 ## Dubai crude oil price (weekly)
 

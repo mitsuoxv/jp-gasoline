@@ -9,6 +9,9 @@ Mitsuo Shiota
   - <a href="#imported-crude-oil-price"
     id="toc-imported-crude-oil-price">Imported crude oil price</a>
   - <a href="#subsidy" id="toc-subsidy">Subsidy</a>
+  - <a href="#dubai-crude-oil-price-monthly"
+    id="toc-dubai-crude-oil-price-monthly">Dubai crude oil price
+    (monthly)</a>
 - <a href="#plot-retail-wholesale-gas-and-crude-oil-prices"
   id="toc-plot-retail-wholesale-gas-and-crude-oil-prices">Plot retail,
   wholesale gas and crude oil prices</a>
@@ -21,6 +24,9 @@ Mitsuo Shiota
     id="toc-wholesalers-margin-over-imported-crude-oil-price-one-month-ahead-plus-tax-minus-subsidy">Wholesalers’
     margin over imported crude oil price one month ahead plus tax minus
     subsidy</a>
+  - <a href="#difference-between-cif-and-fob"
+    id="toc-difference-between-cif-and-fob">Difference between CIF and
+    FOB</a>
 - <a href="#dubai-crude-oil-price-weekly"
   id="toc-dubai-crude-oil-price-weekly">Dubai crude oil price (weekly)</a>
 - <a href="#change-of-metis-effects-calculation-from-march-14-2022"
@@ -33,7 +39,7 @@ Mitsuo Shiota
   id="toc-wholesalers-margin-over-dubai-crude-oil-price">Wholesalers’
   margin over Dubai crude oil price</a>
 
-Updated: 2023-02-25
+Updated: 2023-02-26
 
 ## Summary
 
@@ -79,6 +85,12 @@ Dubai crude oil prices, counterfactual gasoline prices without
 subsidies, actual gasoline prieces and effects of subsidies, which are
 differences between counterfacual and actual, all in the units of yen /
 litre every week.
+
+### Dubai crude oil price (monthly)
+
+I get monthly Dubai crude oil prices in USD / barrel and exchange rates
+in JPY / USD from [FRED by St. Louis FRB](https://fred.stlouisfed.org/),
+and transform them into JPY / litre using 1 barrel = 158.987 litre.
 
 ## Plot retail, wholesale gas and crude oil prices
 
@@ -158,6 +170,14 @@ Wholesalers’ excess margin (yen / liter)
 
 The average wholesalers’ margin in 2021 was 19.8. If I subtract it from
 retailers’ margin, I get excess margin above.
+
+### Difference between CIF and FOB
+
+Difference between CIF and FOB has widened since 2021, probably because
+Russian invasion of Ukraine and depreciated yen have raised insurance
+and transport fees.
+
+![](README_files/figure-gfm/cif_fob_plot-1.png)<!-- -->
 
 ## Dubai crude oil price (weekly)
 
