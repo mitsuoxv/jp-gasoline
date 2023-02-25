@@ -173,7 +173,7 @@ retailers’ margin, I get excess margin above.
 
 ### Difference between CIF and FOB
 
-Difference between CIF and FOB has widened since 2021, probably because
+Difference between CIF and FOB has widened since 2022, probably because
 Russian invasion of Ukraine and depreciated yen have raised insurance
 and transport fees.
 

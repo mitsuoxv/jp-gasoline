@@ -534,7 +534,7 @@ The average wholesalers' margin in 2021 was
 
 ### Difference between CIF and FOB
 
-Difference between CIF and FOB has widened since 2021, probably because Russian invasion of Ukraine and depreciated yen have raised insurance and transport fees.
+Difference between CIF and FOB has widened since 2022, probably because Russian invasion of Ukraine and depreciated yen have raised insurance and transport fees.
 
 ```{r cif_fob_plot}
 combo %>% 
