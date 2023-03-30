@@ -39,7 +39,7 @@ Mitsuo Shiota
   id="toc-wholesalers-margin-over-dubai-crude-oil-price">Wholesalers’
   margin over Dubai crude oil price</a>
 
-Updated: 2023-03-29
+Updated: 2023-03-30
 
 ## Summary
 
@@ -165,7 +165,8 @@ monopolistic power by consolidation.
 | 2022 Sep |   20.1 |         19.8 |           0.3 |
 | 2022 Oct |   24.0 |         19.8 |           4.1 |
 | 2022 Nov |   29.8 |         19.8 |          10.0 |
-| 2022 Dec |   23.9 |         19.8 |           4.1 |
+| 2022 Dec |   23.8 |         19.8 |           4.0 |
+| 2023 Jan |   23.8 |         19.8 |           4.0 |
 
 Wholesalers’ excess margin (yen / liter)
 
