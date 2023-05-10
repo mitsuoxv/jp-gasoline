@@ -39,7 +39,7 @@ Mitsuo Shiota
   id="toc-wholesalers-margin-over-dubai-crude-oil-price">Wholesalers’
   margin over Dubai crude oil price</a>
 
-Updated: 2023-04-28
+Updated: 2023-05-10
 
 ## Summary
 
