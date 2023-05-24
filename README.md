@@ -39,7 +39,7 @@ Mitsuo Shiota
   id="toc-wholesalers-margin-over-dubai-crude-oil-price">Wholesalers’
   margin over Dubai crude oil price</a>
 
-Updated: 2023-05-17
+Updated: 2023-05-24
 
 ## Summary
 
@@ -267,9 +267,6 @@ I tweet about this [here
 (English)](https://twitter.com/mitsuoxv/status/1536998279916924929?s=20&t=arc-0ZS59Qpugt1CcXDGVA)
 and [here
 (Japanese)](https://twitter.com/mitsuoxv/status/1537004102697136128?s=20&t=arc-0ZS59Qpugt1CcXDGVA).
-
-    ## Warning: Removed 1 rows containing missing values (`geom_col()`).
-    ## Removed 1 rows containing missing values (`geom_col()`).
 
 ![](README_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
