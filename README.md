@@ -3,43 +3,29 @@ Gasoline prices in Japan
 Mitsuo Shiota
 2021-11-17
 
-- <a href="#summary" id="toc-summary">Summary</a>
-- <a href="#get-data" id="toc-get-data">Get data</a>
-  - <a href="#gasoline-prices" id="toc-gasoline-prices">Gasoline prices</a>
-  - <a href="#imported-crude-oil-price"
-    id="toc-imported-crude-oil-price">Imported crude oil price</a>
-  - <a href="#subsidy" id="toc-subsidy">Subsidy</a>
-  - <a href="#dubai-crude-oil-price-monthly"
-    id="toc-dubai-crude-oil-price-monthly">Dubai crude oil price
-    (monthly)</a>
-- <a href="#plot-retail-wholesale-gas-and-crude-oil-prices"
-  id="toc-plot-retail-wholesale-gas-and-crude-oil-prices">Plot retail,
-  wholesale gas and crude oil prices</a>
-- <a href="#plot-price-differences" id="toc-plot-price-differences">Plot
-  price differences</a>
-  - <a href="#retailers-margin" id="toc-retailers-margin">Retailers’
-    margin</a>
-  - <a
-    href="#wholesalers-margin-over-imported-crude-oil-price-one-month-ahead-plus-tax-minus-subsidy"
-    id="toc-wholesalers-margin-over-imported-crude-oil-price-one-month-ahead-plus-tax-minus-subsidy">Wholesalers’
-    margin over imported crude oil price one month ahead plus tax minus
-    subsidy</a>
-  - <a href="#difference-between-cif-and-fob"
-    id="toc-difference-between-cif-and-fob">Difference between CIF and
-    FOB</a>
-- <a href="#dubai-crude-oil-price-weekly"
-  id="toc-dubai-crude-oil-price-weekly">Dubai crude oil price (weekly)</a>
-- <a href="#change-of-metis-effects-calculation-from-march-14-2022"
-  id="toc-change-of-metis-effects-calculation-from-march-14-2022">Change
-  of METI’s effects calculation from March 14, 2022</a>
-- <a href="#wholesalers-reported-record-profits-for-fy-2021"
-  id="toc-wholesalers-reported-record-profits-for-fy-2021">Wholesalers
-  reported record profits for FY 2021</a>
-- <a href="#wholesalers-margin-over-dubai-crude-oil-price"
-  id="toc-wholesalers-margin-over-dubai-crude-oil-price">Wholesalers’
-  margin over Dubai crude oil price</a>
+- [Summary](#summary)
+- [Get data](#get-data)
+  - [Gasoline prices](#gasoline-prices)
+  - [Imported crude oil price](#imported-crude-oil-price)
+  - [Subsidy](#subsidy)
+  - [Dubai crude oil price (monthly)](#dubai-crude-oil-price-monthly)
+- [Plot retail, wholesale gas and crude oil
+  prices](#plot-retail-wholesale-gas-and-crude-oil-prices)
+- [Plot price differences](#plot-price-differences)
+  - [Retailers’ margin](#retailers-margin)
+  - [Wholesalers’ margin over imported crude oil price one month ahead
+    plus tax minus
+    subsidy](#wholesalers-margin-over-imported-crude-oil-price-one-month-ahead-plus-tax-minus-subsidy)
+  - [Difference between CIF and FOB](#difference-between-cif-and-fob)
+- [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
+- [Change of METI’s effects calculation from March 14,
+  2022](#change-of-metis-effects-calculation-from-march-14-2022)
+- [Wholesalers reported record profits for FY
+  2021](#wholesalers-reported-record-profits-for-fy-2021)
+- [Wholesalers’ margin over Dubai crude oil
+  price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2023-06-07
+Updated: 2023-06-14
 
 ## Summary
 
