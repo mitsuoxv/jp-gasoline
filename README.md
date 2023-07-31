@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2023-07-28
+Updated: 2023-07-31
 
 ## Summary
 
@@ -85,8 +85,8 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
-Correlations are 0.9351 if wholesales lead Japan customs by 1 month,
-0.9403 if wholesales is concurrent with Japan customs, and 0.9099 if
+Correlations are 0.9353 if wholesales lead Japan customs by 1 month,
+0.9407 if wholesales is concurrent with Japan customs, and 0.9105 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs. However, METI gives subsidy
 assuming that wholesales lead Japan customs by 1 month. So I regard
@@ -101,7 +101,7 @@ wholesalers’ cost.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 19 in 2023 May. This may reflect the reduced
+2015 Dec, and is 17 in 2023 Jun. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -128,6 +128,7 @@ from Agency for National Resources Energy.
 | 2023 Mar |   18.1 |         17.2 |           1.0 |
 | 2023 Apr |   18.1 |         17.2 |           0.9 |
 | 2023 May |   19.1 |         17.2 |           1.9 |
+| 2023 Jun |   16.7 |         17.2 |          -0.4 |
 
 Retailers’ excess margin (yen / liter)
 
@@ -296,6 +297,7 @@ gas price exceeds the expected price if subsidy is fully reflected. From
 | 2023 Mar |  134.2 |        68.8 |    15.4 |    53.8 |         23.7 |    130.9 |    3.3 |
 | 2023 Apr |  134.8 |        68.0 |    14.1 |    53.8 |         23.7 |    131.4 |    3.4 |
 | 2023 May |  133.7 |        67.0 |    13.3 |    53.8 |         23.7 |    131.2 |    2.5 |
+| 2023 Jun |  137.6 |        66.1 |    10.3 |    53.8 |         23.7 |    133.3 |    4.3 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
 lag of Dubai
@@ -325,6 +327,7 @@ was small.
 | 2023 Mar |  134.2 |        68.7 |    15.4 |    53.8 |         23.7 |    130.8 |    3.4 |
 | 2023 Apr |  134.8 |        67.0 |    14.1 |    53.8 |         23.7 |    130.4 |    4.4 |
 | 2023 May |  133.7 |        69.5 |    13.3 |    53.8 |         23.7 |    133.7 |    0.0 |
+| 2023 Jun |  137.6 |        66.1 |    10.3 |    53.8 |         23.7 |    133.3 |    4.3 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
 lag of Dubai
