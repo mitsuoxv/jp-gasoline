@@ -37,7 +37,7 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 
 ```{r get_data, message=FALSE}
 
-wholesale <- read_excel("data/231031o5.xls",
+wholesale <- read_excel("data/231130o5.xls",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 55))
                         ) %>% 
