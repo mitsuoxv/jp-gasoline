@@ -37,7 +37,7 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 
 ```{r get_data, message=FALSE}
 
-wholesale <- read_excel("data/231228o5.xls",
+wholesale <- read_excel("data/240131o5.xls",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 55))
                         ) %>% 
@@ -52,7 +52,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/240124s5.xls", 
+retail <- read_excel("data/240131s5.xls", 
                      sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 59)))
 
@@ -302,7 +302,8 @@ meti_dubai_weekly <- tribble(
 "2023-12-26", 70.4,
 "2024-01-02", NA,
 "2024-01-09", 71.2,
-"2024-01-16", 72.7
+"2024-01-16", 72.7,
+"2024-01-23", 75.7
 ) %>% 
   fill(price, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
@@ -414,7 +415,8 @@ meti_subsidy <- tribble(
 "2023-12-26", 15.0,
 "2024-01-02", NA,
 "2024-01-09", 16.3,
-"2024-01-16", 18.2
+"2024-01-16", 18.2,
+"2024-01-23", 21.4
 ) %>% 
   fill(subsidy, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
