@@ -449,6 +449,44 @@ meti_subsidy_monthly <- meti_subsidy %>%
   summarize(subsidy = mean(subsidy_lag2))
 ```
 
+```{r meti_vs_crude}
+
+retail |> 
+  filter(date >= "2022-01-01") |> 
+  mutate(week = yearweek(date)) |> 
+  select(week, retail_actual = price) |> 
+  left_join(meti_dubai_weekly |> rename(crude_oil = price), by = "week") |> 
+  left_join(meti_subsidy, by = "week") |> 
+  mutate(
+    subsidy = if_else(is.na(subsidy) & year(week) == 2022, 0, subsidy),
+    retail_meti_new = lag(retail_actual) + lag(subsidy, 2) + lag(crude_oil) - lag(crude_oil, 2),
+    retail_meti_old = lag(crude_oil) + 170.2 - 59.4
+    ) |> 
+  select(week, crude_oil, retail_meti_new) |> 
+  filter(week >= make_yearweek(2022, 3)) |> 
+  mutate(
+    crude_oil = lag(crude_oil) + 170.2 - 59.4
+  ) |> 
+  pivot_longer(-week) |> 
+  mutate(
+    name = factor(name,
+                  levels = c("retail_meti_new", "crude_oil"),
+                  labels = c("Retail price\nwithout subsidy\n(left scale)",
+                             "Crude oil price,\n1 wk earlier\n(right scale)"))
+    ) |> 
+  ggplot(aes(week, value)) +
+  geom_line(aes(color = name)) +
+  scale_x_yearweek(date_breaks = "1 year", date_labels = "%Y %b") +
+  scale_y_continuous(
+    name = "Yen per litre",
+    sec.axis = sec_axis(~ .x - 170.2 + 59.4)
+  ) +
+  labs(x = "Weeks", color = NULL,
+       title = "Gasoline retail prices without subsidy estimated by METI are\nconstantly higher than those suggested by crude oil price movement") +
+  theme_light()
+
+```
+
 ### Dubai crude oil price (monthly)
 
 I get monthly Dubai crude oil prices in USD / barrel and exchange rates in JPY / USD from [FRED by St. Louis FRB](https://fred.stlouisfed.org/), and transform them into JPY / litre using 1 barrel = 158.987 litre.
@@ -522,7 +560,7 @@ combo %>%
     sec.axis = sec_axis(~ .x - 53.8)
   ) +
   labs(title = "Gasoline and imported crude oil prices in Japan") +
-theme(legend.position = "none")
+  theme(legend.position = "none")
 ```
 
 ```{r wholesale_vs_crude, warning=FALSE}
