@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2024-04-24
+Updated: 2024-04-28
 
 ## Summary
 
@@ -91,7 +91,7 @@ imported crude oil prices.
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
 Correlations are 0.9359 if wholesales lead Japan customs by 1 month,
-0.9399 if wholesales is concurrent with Japan customs, and 0.9119 if
+0.9398 if wholesales is concurrent with Japan customs, and 0.9119 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs. However, METI gives subsidy
 assuming that wholesales lead Japan customs by 1 month. So I regard
@@ -182,7 +182,8 @@ monopolistic power by consolidation.
 | 2023 Oct |   26.6 |         19.8 |           6.8 |
 | 2023 Nov |   27.4 |         19.8 |           7.6 |
 | 2023 Dec |   25.6 |         19.8 |           5.7 |
-| 2024 Jan |   23.6 |         19.8 |           3.7 |
+| 2024 Jan |   23.5 |         19.8 |           3.6 |
+| 2024 Feb |   27.8 |         19.8 |           7.9 |
 
 Wholesalers’ excess margin (yen / liter)
 
