@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2024-05-01
+Updated: 2024-05-02
 
 ## Summary
 
