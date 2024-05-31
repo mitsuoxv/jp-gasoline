@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2024-05-30
+Updated: 2024-05-31
 
 ## Summary
 
@@ -90,8 +90,8 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
-Correlations are 0.9362 if wholesales lead Japan customs by 1 month,
-0.9402 if wholesales is concurrent with Japan customs, and 0.9124 if
+Correlations are 0.9364 if wholesales lead Japan customs by 1 month,
+0.9404 if wholesales is concurrent with Japan customs, and 0.913 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs. However, METI gives subsidy
 assuming that wholesales lead Japan customs by 1 month. So I regard
@@ -106,7 +106,7 @@ wholesalers’ cost.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 19 in 2024 Mar. This may reflect the reduced
+2015 Dec, and is 19 in 2024 Apr. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -143,6 +143,7 @@ from Agency for National Resources Energy.
 | 2024 Jan |   19.7 |         17.2 |           2.5 |
 | 2024 Feb |   19.5 |         17.2 |           2.4 |
 | 2024 Mar |   19.2 |         17.2 |           2.0 |
+| 2024 Apr |   18.6 |         17.2 |           1.5 |
 
 Retailers’ excess margin (yen / liter)
 
@@ -331,6 +332,7 @@ gas price exceeds the expected price if subsidy is fully reflected. From
 | 2024 Jan |  139.6 |        70.9 |    15.7 |    53.8 |         23.7 |    132.8 |    6.8 |
 | 2024 Feb |  139.1 |        75.2 |    20.5 |    53.8 |         23.7 |    132.3 |    6.8 |
 | 2024 Mar |  139.3 |        77.5 |    21.4 |    53.8 |         23.7 |    133.6 |    5.7 |
+| 2024 Apr |  140.3 |        84.4 |    27.2 |    53.8 |         23.7 |    134.7 |    5.6 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
 lag of Dubai
@@ -370,6 +372,7 @@ was small.
 | 2024 Jan |  139.6 |        71.5 |    15.7 |    53.8 |         23.7 |    133.4 |    6.2 |
 | 2024 Feb |  139.1 |        72.5 |    20.5 |    53.8 |         23.7 |    129.5 |    9.6 |
 | 2024 Mar |  139.3 |        75.6 |    21.4 |    53.8 |         23.7 |    131.7 |    7.6 |
+| 2024 Apr |  140.3 |        78.9 |    27.2 |    53.8 |         23.7 |    129.2 |   11.1 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
 lag of Dubai
