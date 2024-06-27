@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2024-06-26
+Updated: 2024-06-27
 
 ## Summary
 
@@ -186,7 +186,8 @@ monopolistic power by consolidation.
 | 2023 Dec |   25.6 |         19.8 |           5.7 |
 | 2024 Jan |   23.5 |         19.8 |           3.6 |
 | 2024 Feb |   27.7 |         19.8 |           7.8 |
-| 2024 Mar |   25.2 |         19.8 |           5.3 |
+| 2024 Mar |   25.0 |         19.8 |           5.2 |
+| 2024 Apr |   26.8 |         19.8 |           7.0 |
 
 Wholesalers’ excess margin (yen / liter)
 
