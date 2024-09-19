@@ -83,6 +83,16 @@ retail_price_month <- retail_price %>%
 
 ```
 
+```{r retail_weekly}
+
+retail |>
+  ggplot(aes(date, price)) + 
+  geom_line() +
+  labs(x = NULL, y = "Yen per litre",
+       title = "Gasoline ratail price (weekly)",
+       caption = "Source: Agency for Natural Resources and Energy")
+```
+
 ### Imported crude oil price
 
 I get imported crude oil price data from customs statistics via [e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0).

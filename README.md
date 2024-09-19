@@ -59,6 +59,8 @@ site](https://www.enecho.meti.go.jp/statistics/petroleum_and_lpgas/pl007/results
 Although the original retail price data include consumption tax since
 April 1, 2004, I exclude consumption tax all over the period.
 
+![](README_files/figure-gfm/retail_weekly-1.png)<!-- -->
+
 ### Imported crude oil price
 
 I get imported crude oil price data from customs statistics via
