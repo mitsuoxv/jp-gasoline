@@ -522,6 +522,7 @@ retail |>
                   labels = c("Retail price\nwithout subsidy\n(left scale)",
                              "Crude oil price,\n1 wk earlier\n(right scale)"))
     ) |> 
+  filter(week >= yearweek("2022 W04")) |> 
   ggplot(aes(week, value)) +
   geom_line(aes(color = name)) +
   scale_x_yearweek(date_breaks = "1 year", date_labels = "%Y %b") +

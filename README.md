@@ -72,9 +72,6 @@ subsidies, actual gasoline prieces and effects of subsidies, which are
 differences between counterfacual and actual, all in the units of yen /
 litre every week.
 
-    ## Warning: Removed 1 row containing missing values or values outside the scale range
-    ## (`geom_line()`).
-
 ![](README_files/figure-gfm/meti_vs_crude-1.png)<!-- -->
 
 ### Dubai crude oil price (monthly)
