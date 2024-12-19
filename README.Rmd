@@ -561,14 +561,14 @@ retail |>
   filter(week >= yearweek("2022 W04")) |> 
   ggplot(aes(week, value)) +
   geom_line(aes(color = name)) +
-  scale_x_yearweek(date_breaks = "1 year", date_labels = "%Y %b") +
   scale_y_continuous(
     name = "Yen per litre",
     sec.axis = sec_axis(~ .x - 170.2 + 59.4)
   ) +
   labs(x = "Weeks", color = NULL,
-       title = "Gasoline retail prices without subsidy estimated by METI are\nconstantly higher than those suggested by crude oil price movement")
-
+       title = "Gasoline retail prices without subsidy estimated by METI are\nconstantly higher than those suggested by crude oil price movement",
+       caption = "Source: Agency for Natural Resources and Energy") +
+  theme(plot.caption.position = "plot")
 ```
 
 ### Dubai crude oil price (monthly)
