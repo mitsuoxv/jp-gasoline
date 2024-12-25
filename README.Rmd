@@ -545,7 +545,7 @@ retail |>
   left_join(meti_subsidy, by = "week") |> 
   mutate(
     subsidy = if_else(is.na(subsidy) & year(week) == 2022, 0, subsidy),
-    retail_meti_new = lag(retail_actual) + lag(subsidy, 2) + lag(crude_oil) - lag(crude_oil, 2),
+    retail_meti_new = retail_actual + lag(subsidy, 2) + lag(crude_oil) - lag(crude_oil, 2),
     retail_meti_old = lag(crude_oil) + 170.2 - 59.4
     ) |> 
   select(week, crude_oil, retail_meti_new) |> 
