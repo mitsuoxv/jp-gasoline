@@ -52,7 +52,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/241225s5.xls", 
+retail <- read_excel("data/250108s5.xls", 
                      sheet = "レギュラー",
                         col_types = c("text", "date", rep("text", 59)))
 
@@ -360,7 +360,9 @@ meti_dubai_weekly <- tribble(
 "2024-11-26", 69.6,
 "2024-12-03", 68.4,
 "2024-12-10", 70.3,
-"2024-12-17", 71.9
+"2024-12-17", 71.9,
+"2024-12-24", 73.6,
+"2024-12-31", NA
 ) %>% 
   fill(price, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
@@ -520,7 +522,9 @@ meti_subsidy <- tribble(
 "2024-11-26", 15.2,
 "2024-12-03", 14.9,
 "2024-12-10", 12.7,
-"2024-12-17", 15.0
+"2024-12-17", 15.0,
+"2024-12-24", 17.4,
+"2024-12-31", NA
 ) %>% 
   fill(subsidy, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
