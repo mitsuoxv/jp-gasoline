@@ -38,7 +38,8 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 ```{r get_data, message=FALSE}
 
 wholesale <- read_excel("data/250430o5.xlsx",
-                        sheet = "レギュラー"
+                        sheet = "レギュラー",
+                        col_types = rep("text", 57)
                         ) |> 
   select(date = "調査年月", price = "全         国") |> 
   mutate(
@@ -52,17 +53,17 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/250423s5.xlsx", 
+retail <- read_excel("data/250501s5.xlsx", 
                      sheet = "レギュラー",
-                        col_types = c("text", "date", rep("text", 59)))
+                     col_types = rep("text", 61))
 
 retail <- retail %>% 
-  slice_head(n = nrow(retail) - 1) %>% 
   select(date = "調査日", price = "全         国") %>% 
   mutate(
     date = as.Date(date),
     price = as.numeric(price)
-    ) 
+    ) |> 
+  filter(!is.na(date))
 
 retail_price <- retail %>% 
   mutate(
@@ -377,7 +378,8 @@ meti_dubai_weekly <- tribble(
 "2025-03-25", 71.1,
 "2025-04-01", 68.4,
 "2025-04-08", 60.2,
-"2025-04-15", 61.0
+"2025-04-15", 61.0,
+"2025-04-22", 61.7
 ) %>% 
   fill(price, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
@@ -554,7 +556,8 @@ meti_subsidy <- tribble(
 "2025-03-25", 5.8,
 "2025-04-01", 4.4,
 "2025-04-08", 0.0,
-"2025-04-15", 0.9
+"2025-04-15", 0.9,
+"2025-04-22", 1.1
 ) %>% 
   fill(subsidy, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
