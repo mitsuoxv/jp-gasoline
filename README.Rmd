@@ -53,7 +53,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/250514s5.xlsx", 
+retail <- read_excel("data/250521s5.xlsx", 
                      sheet = "レギュラー",
                      skip = 1,
                      col_types = c("text", "date", rep("numeric", 59)))
@@ -382,7 +382,8 @@ meti_dubai_weekly <- tribble(
 "2025-04-15", 61.0,
 "2025-04-22", 61.7,
 "2025-04-29", NA,
-"2025-05-06", 57.6
+"2025-05-06", 57.6,
+"2025-05-13", 60.0
 ) %>% 
   fill(price, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
@@ -562,7 +563,8 @@ meti_subsidy <- tribble(
 "2025-04-15", 0.9,
 "2025-04-22", 1.1,
 "2025-04-29", NA,
-"2025-05-06", 0.0
+"2025-05-06", 0.0,
+"2025-05-13", 7.4
 ) %>% 
   fill(subsidy, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
@@ -607,7 +609,8 @@ retail |>
   geom_line(aes(color = name)) +
   scale_y_continuous(
     name = "Yen per litre",
-    sec.axis = sec_axis(~ .x - 170.2 + 59.4)
+    sec.axis = sec_axis(~ .x - 170.2 + 59.4),
+    limits = c(160, 220)
   ) +
   labs(x = "Weeks", color = NULL,
        title = "Gasoline retail prices without subsidy estimated by METI are\nconstantly higher than those suggested by crude oil price movement",
