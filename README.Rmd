@@ -66,6 +66,10 @@ retail <- retail  |>
     ) |> 
   filter(!is.na(date))
 
+retail <- retail |> 
+  bind_rows(tibble(date = as.Date("2025-05-05"), price = 184.5)) |> 
+  arrange(date)
+
 retail_price <- retail %>% 
   mutate(
     tax_rate = case_when(
