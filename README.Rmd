@@ -37,15 +37,12 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 
 ```{r get_data, message=FALSE}
 
-wholesale <- read_excel("data/250430o5.xlsx",
+wholesale <- read_excel("data/250530o5.xlsx",
                         sheet = "レギュラー",
-                        col_types = rep("text", 57)
+                        col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
-  select(date = "調査年月", price = "全         国") |> 
-  mutate(
-    date = as.Date(date),
-    price = as.numeric(price)
-    ) |> 
+  select(2:3) |> 
+  set_names(c("date", "price")) |> 
   filter(!is.na(date))
 
 wholesale_price <- wholesale %>% 
@@ -55,10 +52,7 @@ wholesale_price <- wholesale %>%
 
 retail <- read_excel("data/250528s5.xlsx", 
                      sheet = "レギュラー",
-                     skip = 1,
-                     col_types = c("text", "date", rep("numeric", 59)))
-
-retail <- retail  |> 
+                     col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
   set_names(c("date", "price")) |> 
   mutate(
