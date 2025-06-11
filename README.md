@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2025-06-04
+Updated: 2025-06-11
 
 ## Summary
 
@@ -73,6 +73,14 @@ Dubai crude oil prices, counterfactual gasoline prices without
 subsidies, actual gasoline prieces and effects of subsidies, which are
 differences between counterfacual and actual, all in the units of yen /
 litre every week.
+
+METI stopped publishing Dubai crude oil prices on June 11, 2025. They
+were calculated weekly average yen per litre from Tuesday to Monday.
+Since then, I use [dollar per
+barrel](https://www.investing.com/commodities/dubai-crude-oil-platts-futures-historical-data),
+[yen per
+dollar](https://www.investing.com/currencies/usd-jpy-historical-data),
+and 159 litre per barrel to calculate yen per litre only on Monday
 
 ![](README_files/figure-gfm/meti_vs_crude-1.png)<!-- -->
 
@@ -308,7 +316,7 @@ I tweet about this [here
 and [here
 (Japanese)](https://twitter.com/mitsuoxv/status/1537004102697136128?s=20&t=arc-0ZS59Qpugt1CcXDGVA).
 
-    ## Warning: Removed 13 rows containing missing values or values outside the scale range
+    ## Warning: Removed 14 rows containing missing values or values outside the scale range
     ## (`geom_col()`).
 
     ## Warning: Removed 2 rows containing missing values or values outside the scale range

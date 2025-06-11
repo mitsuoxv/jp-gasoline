@@ -50,7 +50,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/250604s5.xlsx", 
+retail <- read_excel("data/250611s5.xlsx", 
                      sheet = "レギュラー",
                      col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
@@ -201,6 +201,8 @@ import_price <- import_pdf %>%
 ### Subsidy
 
 [METI publishes](https://nenryo-gekihenkanwa.jp/pdf/result_rev8.pdf) Dubai crude oil prices, counterfactual gasoline prices without subsidies, actual gasoline prieces and effects of subsidies, which are differences between counterfacual and actual, all in the units of yen / litre every week.
+
+METI stopped publishing Dubai crude oil prices on June 11, 2025. They were calculated weekly average yen per litre from Tuesday to Monday. Since then, I use [dollar per barrel](https://www.investing.com/commodities/dubai-crude-oil-platts-futures-historical-data), [yen per dollar](https://www.investing.com/currencies/usd-jpy-historical-data), and 159 litre per barrel to calculate yen per litre only on Monday
 
 ```{r meti_calc}
 
@@ -383,7 +385,8 @@ meti_dubai_weekly <- tribble(
 "2025-05-06", 57.6,
 "2025-05-13", 60.0,
 "2025-05-20", 58.7,
-"2025-05-27", 58.2
+"2025-05-27", 58.2,
+"2025-06-03", 59.9 # 06-09(Mon) 65.88 * 144.61 / 159
 ) %>% 
   fill(price, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
@@ -566,7 +569,8 @@ meti_subsidy <- tribble(
 "2025-05-06", 0.0,
 "2025-05-13", 7.4,
 "2025-05-20", 8.4,
-"2025-05-27", 9.4
+"2025-05-27", 9.4,
+"2025-06-03", 10.0
 ) %>% 
   fill(subsidy, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
