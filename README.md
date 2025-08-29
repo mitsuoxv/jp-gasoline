@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2025-08-28
+Updated: 2025-08-29
 
 ## Summary
 
@@ -97,7 +97,7 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
-Correlations are 0.9379 if wholesales lead Japan customs by 1 month,
+Correlations are 0.9381 if wholesales lead Japan customs by 1 month,
 0.9422 if wholesales is concurrent with Japan customs, and 0.918 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs. However, METI gives subsidy
@@ -113,7 +113,7 @@ wholesalers’ cost.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 21 in 2025 Jun. This may reflect the reduced
+2015 Dec, and is 19 in 2025 Jul. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -165,6 +165,7 @@ from Agency for National Resources Energy.
 | 2025 Apr |   19.1 |         17.2 |           2.0 |
 | 2025 May |   23.0 |         17.2 |           5.8 |
 | 2025 Jun |   21.1 |         17.2 |           3.9 |
+| 2025 Jul |   18.6 |         17.2 |           1.4 |
 
 Retailers’ excess margin (yen / liter)
 
@@ -389,6 +390,7 @@ gas price exceeds the expected price if subsidy is fully reflected. From
 | 2025 Apr |  149.6 |        65.2 |     2.8 |    53.8 |         23.7 |    139.9 |    9.7 |
 | 2025 May |  142.3 |        60.2 |     2.4 |    53.8 |         23.7 |    135.3 |    7.0 |
 | 2025 Jun |  136.1 |        61.7 |    10.2 |    53.8 |         23.7 |    129.0 |    7.1 |
+| 2025 Jul |  139.2 |        65.8 |    10.4 |    53.8 |         23.7 |    132.9 |    6.3 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
 lag of Dubai
@@ -443,6 +445,7 @@ was small.
 | 2025 Apr |  149.6 |        68.4 |     2.8 |    53.8 |         23.7 |    143.1 |    6.5 |
 | 2025 May |  142.3 |        62.8 |     2.4 |    53.8 |         23.7 |    137.9 |    4.4 |
 | 2025 Jun |  136.1 |        59.2 |    10.2 |    53.8 |         23.7 |    126.5 |    9.6 |
+| 2025 Jul |  139.2 |        63.6 |    10.4 |    53.8 |         23.7 |    130.8 |    8.4 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
 lag of Dubai
