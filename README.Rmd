@@ -37,7 +37,7 @@ Agency for National Resources Energy under METI publishes gasoline prices in its
 
 ```{r get_data, message=FALSE}
 
-wholesale <- read_excel("data/250829o5.xlsx",
+wholesale <- read_excel("data/250930o5.xlsx",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
@@ -50,7 +50,7 @@ wholesale_price <- wholesale %>%
   select(month, wholesale_price = price) %>% 
   as_tsibble(index = month)
 
-retail <- read_excel("data/250925s5.xlsx", 
+retail <- read_excel("data/251001s5.xlsx", 
                      sheet = "レギュラー",
                      col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
@@ -401,7 +401,8 @@ meti_dubai_weekly <- tribble(
 "2025-08-26", 64.2, # 09-01(Mon) 69.39 * 147.18 / 159
 "2025-09-02", 64.0, # 09-08(Mon) 69.03 * 147.52 / 159
 "2025-09-09", 65.6, # 09-15(Mon) 70.74 * 147.41 / 159
-"2025-09-16", 64.5 # 09-22(Mon) 69.74 * 147.72 / 159
+"2025-09-16", 64.5, # 09-22(Mon) 69.74 * 147.72 / 159
+"2025-09-23", 65.4 # 09-29(Mon) 69.95 * 148.60 / 159
 ) %>% 
   fill(price, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
@@ -600,7 +601,8 @@ meti_subsidy <- tribble(
 "2025-08-26", 10.0,
 "2025-09-02", 10.0,
 "2025-09-09", 10.0,
-"2025-09-16", 10.0
+"2025-09-16", 10.0,
+"2025-09-23", 10.0
 ) %>% 
   fill(subsidy, .direction = "down") %>% 
   mutate(week = yearweek(start_date)) %>% 
