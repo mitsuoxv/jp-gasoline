@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2025-10-08
+Updated: 2025-10-16
 
 ## Summary
 
@@ -324,7 +324,7 @@ I tweet about this [here
 and [here
 (Japanese)](https://twitter.com/mitsuoxv/status/1537004102697136128?s=20&t=arc-0ZS59Qpugt1CcXDGVA).
 
-    ## Warning: Removed 17 rows containing missing values or values outside the scale range
+    ## Warning: Removed 18 rows containing missing values or values outside the scale range
     ## (`geom_col()`).
 
     ## Warning: Removed 2 rows containing missing values or values outside the scale range
