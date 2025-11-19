@@ -25,7 +25,7 @@ Mitsuo Shiota
 - [Wholesalers’ margin over Dubai crude oil
   price](#wholesalers-margin-over-dubai-crude-oil-price)
 
-Updated: 2025-11-12
+Updated: 2025-11-19
 
 ## Summary
 
@@ -272,6 +272,9 @@ effects are smaller than subsidies, subsidies are not fully reflected in
 retail prices, and wholesalers and/or retailers are getting benefits
 from subsidies.
 
+    ## Warning: Removed 2 rows containing missing values or values outside the scale range
+    ## (`geom_line()`).
+
 ![](README_files/figure-gfm/actual_counterfactual-1.png)<!-- -->
 
 ![](README_files/figure-gfm/subsidy_effect-1.png)<!-- -->
@@ -282,6 +285,9 @@ oil prices and retail prices. Lag 0 to 5 assumes margins 107.3, 107.6,
 
 Lag 2 assumes 110.8. Let us assume this margin of 110.8 over all lags
 between Dubai crude oil prices and retail prices.
+
+    ## Warning: Removed 2 rows containing missing values or values outside the scale range
+    ## (`geom_line()`).
 
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
 
