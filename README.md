@@ -97,8 +97,8 @@ imported crude oil prices.
 
 ![](README_files/figure-gfm/plot1-1.png)<!-- -->
 
-Correlations are 0.9385 if wholesales lead Japan customs by 1 month,
-0.9426 if wholesales is concurrent with Japan customs, and 0.9184 if
+Correlations are 0.9387 if wholesales lead Japan customs by 1 month,
+0.9428 if wholesales is concurrent with Japan customs, and 0.9187 if
 wholesales lag Japan customs by 1 month. The highest correlation is if
 wholesales is concurrent with Japan customs. However, METI gives subsidy
 assuming that wholesales lead Japan customs by 1 month. So I regard
@@ -113,7 +113,7 @@ wholesalers’ cost.
 
 Differences between retail and wholesale prices have been increasing
 since 2016. The average difference was 12 yen per litre from 2000 Jul to
-2015 Dec, and is 19 in 2025 Oct. This may reflect the reduced
+2015 Dec, and is 20 in 2025 Nov. This may reflect the reduced
 competition among retailers. You can see the number of retailers has
 constantly decreased since around 1995 in the last page of [this
 material
@@ -169,6 +169,7 @@ from Agency for National Resources Energy.
 | 2025 Aug |   18.5 |         17.2 |           1.4 |
 | 2025 Sep |   17.8 |         17.2 |           0.6 |
 | 2025 Oct |   19.1 |         17.2 |           1.9 |
+| 2025 Nov |   20.0 |         17.2 |           2.9 |
 
 Retailers’ excess margin (yen / liter)
 
@@ -275,9 +276,6 @@ effects are smaller than subsidies, subsidies are not fully reflected in
 retail prices, and wholesalers and/or retailers are getting benefits
 from subsidies.
 
-    ## Warning: Removed 2 rows containing missing values or values outside the scale range
-    ## (`geom_line()`).
-
 ![](README_files/figure-gfm/actual_counterfactual-1.png)<!-- -->
 
 ![](README_files/figure-gfm/subsidy_effect-1.png)<!-- -->
@@ -288,9 +286,6 @@ oil prices and retail prices. Lag 0 to 5 assumes margins 107.3, 107.6,
 
 Lag 2 assumes 110.8. Let us assume this margin of 110.8 over all lags
 between Dubai crude oil prices and retail prices.
-
-    ## Warning: Removed 2 rows containing missing values or values outside the scale range
-    ## (`geom_line()`).
 
 ![](README_files/figure-gfm/actual_counterfactual2-1.png)<!-- -->
 
@@ -407,6 +402,7 @@ gas price exceeds the expected price if subsidy is fully reflected. From
 | 2025 Aug |  140.1 |        65.8 |    10.6 |    53.8 |         23.7 |    132.8 |    7.3 |
 | 2025 Sep |  141.2 |        64.7 |    10.1 |    53.8 |         23.7 |    132.1 |    9.1 |
 | 2025 Oct |  139.6 |        62.2 |    10.0 |    53.8 |         23.7 |    129.7 |    9.9 |
+| 2025 Nov |  135.8 |        63.5 |    12.5 |    53.8 |         23.7 |    128.5 |    7.3 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks
 lag of Dubai
@@ -465,6 +461,7 @@ was small.
 | 2025 Aug |  140.1 |        66.6 |    10.6 |    53.8 |         23.7 |    133.5 |    6.6 |
 | 2025 Sep |  141.2 |        65.4 |    10.1 |    53.8 |         23.7 |    132.8 |    8.4 |
 | 2025 Oct |  139.6 |        64.9 |    10.0 |    53.8 |         23.7 |    132.4 |    7.2 |
+| 2025 Nov |  135.8 |        61.5 |    12.5 |    53.8 |         23.7 |    126.5 |    9.3 |
 
 Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks
 lag of Dubai
