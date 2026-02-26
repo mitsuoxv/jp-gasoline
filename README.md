@@ -234,6 +234,7 @@ monopolistic power by consolidation.
 | 2025 Sep |   27.5 |         19.8 |           7.7 |
 | 2025 Oct |   27.1 |         19.8 |           7.3 |
 | 2025 Nov |   26.4 |         19.8 |           6.5 |
+| 2025 Dec |   27.7 |         19.8 |           7.9 |
 
 Wholesalers’ excess margin (yen / liter)
 
