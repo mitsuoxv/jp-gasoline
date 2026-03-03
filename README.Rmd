@@ -1,7 +1,7 @@
 ---
-title: "Gasoline prices in Japan"
+title: "Gasoline retailers' and wholesalers' margins in Japan"
 author: "Mitsuo Shiota"
-date: "2021-11-17"
+date: "2026-03-03"
 output: 
   github_document:
     toc: TRUE
@@ -13,31 +13,25 @@ knitr::opts_chunk$set(echo = FALSE)
 library(tidyverse)
 library(readxl)
 library(tsibble)
-library(fable)
-library(pdftools)
-library(patchwork)
+# library(fable)
 library(tidyquant)
+
+theme_set(theme_light())
 ```
 
 Updated: `r Sys.Date()`
 
-## Summary
-
-[Nikkei reported](https://www.nikkei.com/article/DGXZQOUA169350W1A111C2000000/) on November 17, 2021 that Ministry of Economy, Trade and Industry (METI) is considering a subsidy to gasoline wholesalers to suppress gasoline retail prices when they rise to higher than 170 yen per litre. At the end of the article, Nikkei showed a skeptical view saying, "As the number of retailers has decreased, the retailers may not reduce retail prices even if wholesale prices fall." So I study the relationship among retail and wholesale prices of gasoline and imported crude oil prices in Japan.
-
-I find the current surge in retail prices of gasoline is mainly due to the surge in imported crude oil prices, and partly due to the reduced competition among retailers and wholesalers, who are getting more margins.
-
-To give a subsidy to wholesalers may incentivize them to raise their margins even more. This subsidy idea is contrary to that of the Biden Administration, which has begun to investigate oil companies.
-
 ## Get data
 
-### Gasoline prices
+### Gasoline wholesale and retail prices
 
-Agency for National Resources Energy under METI publishes gasoline prices in its [web site](https://www.enecho.meti.go.jp/statistics/petroleum_and_lpgas/pl007/results.html#headline1). Although the original retail price data include consumption tax since April 1, 2004, I exclude consumption tax all over the period.
+Agency for National Resources Energy under METI publishes gasoline prices in its [web site](https://www.enecho.meti.go.jp/statistics/petroleum_and_lpgas/pl007/results.html#headline1). 
+
+Published wholesale prices are monthly, and do not include consumption tax. Published retail prices are weekly, and include consumption tax. I transform published retail prices into monthly retail prices which do not include consumption tax.
 
 ```{r get_data, message=FALSE}
 
-wholesale <- read_excel("data/260130o5.xlsx",
+wholesale <- read_excel("data/260227o5.xlsx",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
@@ -45,10 +39,10 @@ wholesale <- read_excel("data/260130o5.xlsx",
   set_names(c("date", "price")) |> 
   filter(!is.na(date))
 
-wholesale_price <- wholesale %>% 
-  mutate(month = yearmonth(date)) %>% 
-  select(month, wholesale_price = price) %>% 
-  as_tsibble(index = month)
+wholesale <- wholesale  |>  
+  mutate(month = yearmonth(date)) |> 
+  select(month, wholesale_price = price) |> 
+  filter(month >= yearmonth("2003-01"))
 
 retail <- read_excel("data/260226s5.xlsx", 
                      sheet = "レギュラー",
@@ -61,373 +55,42 @@ retail <- read_excel("data/260226s5.xlsx",
   filter(!is.na(date))
 
 retail <- retail |> 
-  bind_rows(tibble(date = as.Date("2025-05-05"), price = 184.5)) |> 
-  arrange(date)
+  mutate(month = yearmonth(date)) |> 
+  summarize(retail_price = mean(price), .by = month) |> 
+  filter(month >= yearmonth("2003-01"))
 
-retail_price <- retail %>% 
+retail <- retail |> 
   mutate(
-    tax_rate = case_when(
-      date < "2004-04-01" ~ 0,
-      date < "2014-04-01" ~ .05,
-      date < "2019-10-01" ~ .08,
-      TRUE ~ .1
-                       ),
-    price_excl_tax = price / (1 + tax_rate)
-  )
-
-retail_price_month <- retail_price %>% 
-  select(date, retail_price = price_excl_tax) %>% 
-  as_tsibble(index = date) %>% 
-  index_by(month = yearmonth(date)) %>% 
-  summarize(retail_price = mean(retail_price))
+    consumption_tax_rate = case_when(
+      month < yearmonth("2004-04") ~ 0,
+      month < yearmonth("2014-04") ~ .05,
+      month < yearmonth("2019-10") ~ .08,
+      .default = .1),
+    retail_price = retail_price  / (1 + consumption_tax_rate)
+  ) |> 
+  select(month, retail_price)
 
 ```
 
-```{r retail_weekly}
+### Dubai crude oil price (monthly)
 
-retail |>
-  ggplot(aes(date, price)) + 
-  geom_line() +
-  labs(x = NULL, y = "Yen per litre",
-       title = "Gasoline retail price (weekly)",
-       caption = "Source: Agency for Natural Resources and Energy")
-```
+I get monthly Dubai crude oil prices in USD / barrel and exchange rates in JPY / USD from [FRED by St. Louis FRB](https://fred.stlouisfed.org/), and transform them into JPY / litre using 1 barrel = 158.987 litre.
 
-### Imported crude oil price
+```{r dubai_monthly}
 
-I get imported crude oil price data from customs statistics via [e-Stat](https://www.e-stat.go.jp/stat-search/files?page=1&layout=datalist&toukei=00350300&bunya_l=16&tstat=000001013141&cycle=1&tclass1=000001013192&tclass2=000001013194&tclass3val=0).
-
-```{r get_crude_from_csv, message=FALSE}
-
-get_crude_oil_price <- function(df) {
-  df %>% 
-    mutate(Commodity =  str_remove_all(Commodity, "'| ")) %>% 
-    filter(Commodity == "30301") %>% 
-    pivot_longer(!("Exp or Imp":Unit), names_to = c(".value", "month"),
-                 names_pattern = "^(\\w+)\\-(\\w+)$") %>% 
-    filter(month != "Year") %>% 
-    mutate(
-      month = if_else(month == "Apl", "Apr", month),
-      date = dmy(paste(1, month, Year)),
-      crude_oil_price = Value / Quantity
-    ) %>% 
-    select(date, crude_oil_price)
-}
-
-import <- paste0("data/", dir("data/", ".csv")) %>% 
-  map(~ read_csv(.x) %>% get_crude_oil_price) %>% 
-  bind_rows() %>% 
-  filter(!is.na(crude_oil_price))
-```
-
-```{r get_crude_from_pdf, eval=FALSE}
-
-get_from_pdf <- function(id) {
-  paste0("https://www.e-stat.go.jp/stat-search/file-download?statInfId=00000", id, "&fileKind=2") %>% 
-    pdf_text() %>% 
-    read_csv() %>% 
-    setNames(c("line")) %>% 
-    filter(str_detect(line, "^\\d")) %>% 
-    pull(line) %>% 
-    paste(collapse = "\n") %>% 
-    read_fwf(col_positions = fwf_widths(c(23, 2, 15, 17, 17, 11)),
-             col_types = cols(.default = col_character())) %>% 
-    mutate(statInfId = id)
-}
-
-id_date <- tibble(
-  statInfId = c("2356861", "2360681", "2366821", # 2001
-               "2370903", "2374447", "2377215",
-               "2388625", "2395224", "2400500",
-               "2403671", "2409041", "2413944",
-               "2353533", "2368407", "2373904", # 2002
-               "2390257", "2397348", "2406335",
-               "2414755", "2419894", "2434540",
-               "2462003", "2477263", "2487568",
-               "2154280", "2159214", "2167204", # 2003
-               "2172358", "2182731", "2187465",
-               "2192337", "2196921", "2203979",
-               "2206662", "2210342", "2214409",
-               "2154829", "2163290", "2170020", # 2004
-               "2176027", "2184517", "2193631",
-               "2212517", "2216694", "2224086",
-               "2243822", "2253031", "2263407",
-               "2221012", "2225946", "2228322", # 2005
-               "2231036", "2234710", "2238784",
-               "2243156", "2248685", "2251982",
-               "2254626", "2257154", "2263286",
-               "2070609", "2073232", "2075826", # 2006
-               "2078138", "2080876", "2084239",
-               "2086779", "2089357", "2091820",
-               "2094179", "2096541", "2099394",
-               "2101765", "2104568", "2107778", # 2007
-               "2110529", "2113720", "2116186",
-               "2119134", "2122199", "2125080",
-               "2127655", "2130968", "2133192",
-               "2524275", "2524925", "2525183", # 2008
-               "2525808", "2526624", "2527557",
-               "2528619", "2530117", "2530804", 
-               "2534412", "2531505", "2532132"
-               ),
-  date = map(2001:2008, ~ make_date(year = .x, month = 1:12)) %>% 
-      unlist() %>% 
-      as.Date(origin = "1970-01-01")
-)
-
-import_pdf <- map(id_date$statInfId, ~ get_from_pdf(.x)) %>% 
-  bind_rows() %>% 
-  left_join(id_date, by = "statInfId")
-
-save(import_pdf, file = "data/import_from_pdf.rda")
-```
-
-```{r pdf_data_plus_csv_data}
-load(file = "data/import_from_pdf.rda")
-
-import_price <- import_pdf %>% 
-  filter(X1 == "30301") %>% 
-  select(date, quantity = X3, value = X4) %>% 
+dubai <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "2003-01-01")  |>
+  pivot_wider(names_from = symbol, values_from = price) |>
   mutate(
-    across(quantity:value, as.numeric),
-    crude_oil_price = value / quantity
-    ) %>% 
-  select(date, crude_oil_price) %>% 
-  bind_rows(import)  %>% 
-  mutate(month = yearmonth(date)) %>% 
-  as_tsibble(index = month) %>% 
-  select(-date)
+    dubai_oil_price = POILDUBUSDM * EXJPUS / 158.987,
+    month = yearmonth(date)
+    ) |>
+  select(month, dubai_oil_price)
+
 ```
 
 ### Subsidy
 
-[METI publishes](https://nenryo-gekihenkanwa.jp/pdf/result_rev8.pdf) Dubai crude oil prices, counterfactual gasoline prices without subsidies, actual gasoline prieces and effects of subsidies, which are differences between counterfacual and actual, all in the units of yen / litre every week.
-
-METI stopped publishing Dubai crude oil prices on June 11, 2025. They were calculated weekly average yen per litre from Tuesday to Monday. Since then, I use [dollar per barrel](https://www.investing.com/commodities/dubai-crude-oil-platts-futures-historical-data), [yen per dollar](https://www.investing.com/currencies/usd-jpy-historical-data), and 159 litre per barrel to calculate yen per litre only on Monday
-
-```{r meti_calc}
-
-meti_dubai_weekly <- tribble(
-  ~start_date, ~price,
-  "2022-01-03", 57.8,
-  "2022-01-10", 59.4,
-  "2022-01-17", 62.6,
-  "2022-01-24", 62.9,
-  "2022-01-31", 64.4,
-  "2022-02-07", 66.2,
-  "2022-02-14", 67.4,
-  "2022-02-22", 69.9,
-  "2022-03-01", 81.6,
-  "2022-03-08", 85.8,
-  "2022-03-15", 76.8,
-  "2022-03-22", 88,
-  "2022-03-29", 81.6,
-  "2022-04-05", 79.2,
-  "2022-04-12", 83.6,
-  "2022-04-19", 85.6,
-  "2022-04-26", 85.4,
-  "2022-05-03", NA,
-  "2022-05-10", 85.5,
-  "2022-05-17", 88.2,
-  "2022-05-24", 89.2,
-  "2022-05-31", 93.3,
-  "2022-06-07", 99.1,
-  "2022-06-14", 97.9,
-  "2022-06-21", 92.3,
-  "2022-06-28", 94.9,
-  "2022-07-05", 88.3,
-  "2022-07-12", 86.3,
-  "2022-07-19", 90.3,
-  "2022-07-26", 89.8,
-  "2022-08-02", 81.4,
-  "2022-08-09", 82.0,
-  "2022-08-16", 79.6,
-  "2022-08-23", 86.0,
-  "2022-08-30", 85.3,
-  "2022-09-06", 83.0,
-  "2022-09-13", 84.2,
-  "2022-09-20", 82.4,
-  "2022-09-27", 79.4,
-  "2022-10-04", 83.5,
-  "2022-10-11", 86.3,
-  "2022-10-18", 85.1,
-  "2022-10-25", 85.3,
-  "2022-11-01", 86.5,
-  "2022-11-08", 82.7,
-  "2022-11-15", 76.5,
-  "2022-11-22", 70.7,
-  "2022-11-29", 69.8,
-  "2022-12-06", 64.6,
-  "2022-12-13", 66.4,
-  "2022-12-20", 65.7,
-"2022-12-27", 66.3,
-"2023-01-03", NA,
-"2023-01-10", 65.3,
-"2023-01-17", 67.9,
-"2023-01-24", 68.7,
-"2023-01-31", 66.2,
-"2023-02-07", 68.6,
-"2023-02-14", 70.6,
-"2023-02-21", 69.5,
-"2023-02-28", 71.2,
-"2023-03-07", 70.8,
-"2023-03-14", 63.7,
-"2023-03-21", 62.3,
-"2023-03-28", 66.0,
-"2023-04-04", 71.0,
-"2023-04-11", 72.6,
-"2023-04-18", 70.3,
-"2023-04-25", 67.8,
-"2023-05-02", NA,
-"2023-05-09", 64.4,
-"2023-05-16", 64.9,
-"2023-05-23", 67.3,
-"2023-05-30", 65.3,
-"2023-06-06", 66.1,
-"2023-06-13", 65.7,
-"2023-06-20", 67.6,
-"2023-06-27", 67.9,
-"2023-07-04", 69.9,
-"2023-07-11", 70.6,
-"2023-07-18", 70.4,
-"2023-07-25", 71.6,
-"2023-08-01", 77.7,
-"2023-08-08", 79.5,
-"2023-08-15", 79.7,
-"2023-08-22", 79.8,
-"2023-08-29", 80.9,
-"2023-09-05", 84.7,
-"2023-09-12", 87.0,
-"2023-09-19", 88.0,
-"2023-09-26", 89.0,
-"2023-10-03", 83.8,
-"2023-10-10", 84.2,
-"2023-10-17", 86.5,
-"2023-10-24", 85.5,
-"2023-10-31", 83.3,
-"2023-11-07", 80.0,
-"2023-11-14", 79.5,
-"2023-11-21", 78.7,
-"2023-11-28", 76.8,
-"2023-12-05", 71.3,
-"2023-12-12", 69.3,
-"2023-12-19", 69.9,
-"2023-12-26", 70.4,
-"2024-01-02", NA,
-"2024-01-09", 71.2,
-"2024-01-16", 72.7,
-"2024-01-23", 75.7,
-"2024-01-30", 74.3,
-"2024-02-06", 74.3,
-"2024-02-13", 76.7,
-"2024-02-20", 77.1,
-"2024-02-27", 77.5,
-"2024-03-05", 77.4,
-"2024-03-12", 78.0,
-"2024-03-19", 80.5,
-"2024-03-26", 81.3,
-"2024-04-02", 85.9,
-"2024-04-09", 87.1,
-"2024-04-16", 87.1,
-"2024-04-23", 87.1,
-"2024-04-30", 85.4,
-"2024-05-07", 82.5,
-"2024-05-14", 83.0,
-"2024-05-21", 82.9,
-"2024-05-28", 83.4,
-"2024-06-04", 78.3,
-"2024-06-11", 81.3,
-"2024-06-18", 83.1,
-"2024-06-25", 84.9,
-"2024-07-02", 88.5,
-"2024-07-09", 86.9,
-"2024-07-16", 84.2,
-"2024-07-23", 80.4,
-"2024-07-30", 74.9,
-"2024-08-06", 70.8,
-"2024-08-13", 74.0,
-"2024-08-20", 70.9,
-"2024-08-27", 71.1,
-"2024-09-03", 67.6,
-"2024-09-10", 64.7,
-"2024-09-17", 66.7,
-"2024-09-24", 66.7,
-"2024-10-01", 69.2,
-"2024-10-08", 73.1,
-"2024-10-15", 70.2,
-"2024-10-22", 71.4,
-"2024-10-29", 69.9,
-"2024-11-05", 71.5,
-"2024-11-12", 69.6,
-"2024-11-19", 71.3,
-"2024-11-26", 69.6,
-"2024-12-03", 68.4,
-"2024-12-10", 70.3,
-"2024-12-17", 71.9,
-"2024-12-24", 73.6,
-"2024-12-31", NA,
-"2025-01-07", 77.0,
-"2025-01-14", 81.9,
-"2025-01-21", 80.8,
-"2025-01-28", 78.1,
-"2025-02-04", 74.9,
-"2025-02-11", 74.9,
-"2025-02-18", 75.0,
-"2025-02-25", 72.8,
-"2025-03-04", 66.8,
-"2025-03-11", 66.8,
-"2025-03-18", 69.0,
-"2025-03-25", 71.1,
-"2025-04-01", 68.4,
-"2025-04-08", 60.2,
-"2025-04-15", 61.0,
-"2025-04-22", 61.7,
-"2025-04-29", NA,
-"2025-05-06", 57.6,
-"2025-05-13", 60.0,
-"2025-05-20", 58.7,
-"2025-05-27", 58.2,
-"2025-06-03", 59.9, # 06-09(Mon) 65.88 * 144.61 / 159
-"2025-06-10", 63.1, # 06-16(Mon) 69.34 * 144.74 / 159
-"2025-06-17", 68.7, # +5.6 = 175 + 13.4 - 182.8
-"2025-06-24", 62.8, # 06-30(Mon) 69.27 * 144.04 / 159
-"2025-07-01", 64.6, # 07-07(Mon) 70.33 * 146.05 / 159
-"2025-07-08", 67.7, # +3.1 = 175 + 11.3 - 183.2; 07-14(Mon) 65.1 = 70.06 * 147.71 / 159
-"2025-07-15", 68.0, # +0.3 = 175 + 10.2 - 184.9; 07-21(Mon) 65.2 = 70.32 * 147.39 / 159
-"2025-07-22", 66.0, # 07-28(Mon) 70.59 * 148.55 / 159
-"2025-07-29", 69.0, # +3.0 = 175 + 12.2 - 184.2; 08-04(Mon) 65.3 = 70.64 * 147.09 / 159
-"2025-08-05", 64.3, # 08-11(Mon) 69.03 * 148.14 / 159
-"2025-08-12", 64.1, # 08-18(Mon) 68.94 * 147.88 / 159
-"2025-08-19", 65.4, # +1.3 = 175 + 10.5 - 184.2; 08-25(Mon) 64.7 = 69.64 * 147.79 / 159
-"2025-08-26", 64.2, # 09-01(Mon) 69.39 * 147.18 / 159
-"2025-09-02", 64.0, # 09-08(Mon) 69.03 * 147.52 / 159
-"2025-09-09", 65.6, # 09-15(Mon) 70.74 * 147.41 / 159
-"2025-09-16", 64.5, # 09-22(Mon) 69.74 * 147.72 / 159
-"2025-09-23", 65.4, # 09-29(Mon) 69.95 * 148.60 / 159
-"2025-09-30", 62.0, # 10-06(Mon) 65.59 * 150.36 / 159
-"2025-10-07", 61.5, # 10-13(Mon) 64.18 * 152.28 / 159
-"2025-10-14", 59.9, # 10-20(Mon) 63.15 * 150.75 / 159
-"2025-10-21", 62.8, # 10-27(Mon) 65.36 * 152.88 / 159
-"2025-10-28", 64.3, # 11-03(Mon) 66.30 * 154.22 / 159
-"2025-11-04", 63.4, # 11-10(Mon) 65.37 * 154.15 / 159
-"2025-11-11", 63.5, # 11-17(Mon) 65.00 * 155.26 / 159
-"2025-11-18", 63.7, # 11-24(Mon) 64.50 * 156.91 / 159
-"2025-11-25", 62.4, # 12-01(Mon) 63.80 * 155.45 / 159
-"2025-12-02", 62.1, # 12-08(Mon) 63.35 * 155.93 / 159
-"2025-12-09", 60.2, # 12-15(Mon) 61.69 * 155.22 / 159
-"2025-12-16", 61.4, # 12-22(Mon) 62.12 * 157.07 / 159
-"2025-12-23", 60.9, # 12-29(Mon) 62.02 * 156.06 / 159
-"2025-12-30", 59.3, # 01-05(Mon) 60.31 * 156.39 / 159
-"2026-01-06", 60.8, # 01-12(Mon) 61.17 * 158.16 / 159
-"2026-01-13", 61.3, # 01-19(Mon) 61.66 * 158.12 / 159
-"2026-01-20", 59.7, # 01-26(Mon) 61.58 * 154.17 / 159
-"2026-01-27", 63.6, # 02-02(Mon) 65.02 * 155.62 / 159
-"2026-02-03", 66.5, # 02-09(Mon) 67.79 * 155.89 / 159
-"2026-02-10", 64.7, # 02-16(Mon) 67.05 * 153.51 / 159
-"2026-02-17", 66.5 # 02-23(Mon) 68.38 * 154.64 / 159
-) %>% 
-  fill(price, .direction = "down") %>% 
-  mutate(week = yearweek(start_date)) %>% 
-  select(-start_date)
+```{r subsidy}
 
 meti_subsidy <- tribble(
   ~start_date, ~subsidy,
@@ -479,865 +142,212 @@ meti_subsidy <- tribble(
   "2022-11-29", 18.7,
   "2022-12-06", 13.7,
   "2022-12-13", 15.6,
-"2022-12-20", 14.8,
-"2022-12-27", 15.6,
-"2023-01-03", NA,
-"2023-01-10", 14.8,
-"2023-01-17", 17.5,
-"2023-01-24", 18.4,
-"2023-01-31", 15.5,
-"2023-02-07", 17.3,
-"2023-02-14", 18.7,
-"2023-02-21", 17.0,
-"2023-02-28", 18.1,
-"2023-03-07", 17.1,
-"2023-03-14", 9.5,
-"2023-03-21", 8.1,
-"2023-03-28", 11.9,
-"2023-04-04", 17.2,
-"2023-04-11", 19.0,
-"2023-04-18", 16.8,
-"2023-04-25", 14.1,
-"2023-05-02", NA,
-"2023-05-09", 10.5,
-"2023-05-16", 11.1,
-"2023-05-23", 12.5,
-"2023-05-30", 10.0,
-"2023-06-06", 9.6,
-"2023-06-13", 9.0,
-"2023-06-20", 9.7,
-"2023-06-27", 10.1,
-"2023-07-04", 10.4,
-"2023-07-11", 10.2,
-"2023-07-18", 8.4,
-"2023-07-25", 9.1,
-"2023-08-01", 12.0,
-"2023-08-08", 12.1,
-"2023-08-15", 10.0,
-"2023-08-22", 9.7,
-"2023-08-29", 17.4,
-"2023-09-05", 26.1,
-"2023-09-12", 30.5,
-"2023-09-19", 32.1,
-"2023-09-26", 37.6,
-"2023-10-03", 34.5,
-"2023-10-10", 34.8,
-"2023-10-17", 35.7,
-"2023-10-24", 33.3,
-"2023-10-31", 29.7,
-"2023-11-07", 25.1,
-"2023-11-14", 23.5,
-"2023-11-21", 21.9,
-"2023-11-28", 19.9,
-"2023-12-05", 14.7,
-"2023-12-12", 13.0,
-"2023-12-19", 13.8,
-"2023-12-26", 15.0,
-"2024-01-02", NA,
-"2024-01-09", 16.3,
-"2024-01-16", 18.2,
-"2024-01-23", 21.4,
-"2024-01-30", 19.8,
-"2024-02-06", 19.4,
-"2024-02-13", 21.3,
-"2024-02-20", 21.6,
-"2024-02-27", 21.7,
-"2024-03-05", 21.1,
-"2024-03-12", 21.2,
-"2024-03-19", 23.3,
-"2024-03-26", 23.9,
-"2024-04-02", 28.7,
-"2024-04-09", 30.0,
-"2024-04-16", 30.2,
-"2024-04-23", 30.1,
-"2024-04-30", 28.3,
-"2024-05-07", 25.1,
-"2024-05-14", 25.6,
-"2024-05-21", 25.7,
-"2024-05-28", 26.2,
-"2024-06-04", 21.1,
-"2024-06-11", 24.0,
-"2024-06-18", 25.8,
-"2024-06-25", 28.4,
-"2024-07-02", 33.4,
-"2024-07-09", 32.9,
-"2024-07-16", 30.8,
-"2024-07-23", 27.1,
-"2024-07-30", 21.4,
-"2024-08-06", 17.1,
-"2024-08-13", 20.0,
-"2024-08-20", 16.6,
-"2024-08-27", 16.4,
-"2024-09-03", 12.6,
-"2024-09-10", 9.7,
-"2024-09-17", 11.6,
-"2024-09-24", 11.6,
-"2024-10-01", 14.3,
-"2024-10-08", 18.3,
-"2024-10-15", 15.5,
-"2024-10-22", 16.7,
-"2024-10-29", 14.9,
-"2024-11-05", 16.4,
-"2024-11-12", 14.5,
-"2024-11-19", 16.3,
-"2024-11-26", 15.2,
-"2024-12-03", 14.9,
-"2024-12-10", 12.7,
-"2024-12-17", 15.0,
-"2024-12-24", 17.4,
-"2024-12-31", NA,
-"2025-01-07", 16.5,
-"2025-01-14", 21.5,
-"2025-01-21", 20.5,
-"2025-01-28", 17.4,
-"2025-02-04", 13.7,
-"2025-02-11", 13.1,
-"2025-02-18", 12.5,
-"2025-02-25", 9.4,
-"2025-03-04", 2.5,
-"2025-03-11", 2.1,
-"2025-03-18", 3.8,
-"2025-03-25", 5.8,
-"2025-04-01", 4.4,
-"2025-04-08", 0.0,
-"2025-04-15", 0.9,
-"2025-04-22", 1.1,
-"2025-04-29", NA,
-"2025-05-06", 0.0,
-"2025-05-13", 7.4,
-"2025-05-20", 8.4,
-"2025-05-27", 9.4,
-"2025-06-03", 10.0,
-"2025-06-10", 10.0,
-"2025-06-17", 13.4,
-"2025-06-24", 10.0,
-"2025-07-01", 10.0,
-"2025-07-08", 11.3,
-"2025-07-15", 10.2,
-"2025-07-22", 10.0,
-"2025-07-29", 12.2,
-"2025-08-05", 10.0,
-"2025-08-12", 10.0,
-"2025-08-19", 10.5,
-"2025-08-26", 10.0,
-"2025-09-02", 10.0,
-"2025-09-09", 10.0,
-"2025-09-16", 10.0,
-"2025-09-23", 10.0,
-"2025-09-30", 10.0,
-"2025-10-07", 10.0,
-"2025-10-14", 10.0,
-"2025-10-21", 10.0,
-"2025-10-28", 10.0,
-"2025-11-04", 15.0,
-"2025-11-11", 15.0,
-"2025-11-18", 20.0,
-"2025-11-25", 20.0,
-"2025-12-02", 25.1,
-"2025-12-09", 25.1,
-"2025-12-16", 25.1,
-"2025-12-23", 25.1,
-"2025-12-30", 25.1,
-"2026-01-06", 25.1,
-"2026-01-13", 25.1,
-"2026-01-20", 25.1,
-"2026-01-27", 25.1,
-"2026-02-03", 25.1,
-"2026-02-10", 25.1,
-"2026-02-17", 25.1
-) %>% 
-  fill(subsidy, .direction = "down") %>% 
-  mutate(week = yearweek(start_date)) %>% 
-  select(-start_date)
+  "2022-12-20", 14.8,
+  "2022-12-27", 15.6,
+  "2023-01-03", NA,
+  "2023-01-10", 14.8,
+  "2023-01-17", 17.5,
+  "2023-01-24", 18.4,
+  "2023-01-31", 15.5,
+  "2023-02-07", 17.3,
+  "2023-02-14", 18.7,
+  "2023-02-21", 17.0,
+  "2023-02-28", 18.1,
+  "2023-03-07", 17.1,
+  "2023-03-14", 9.5,
+  "2023-03-21", 8.1,
+  "2023-03-28", 11.9,
+  "2023-04-04", 17.2,
+  "2023-04-11", 19.0,
+  "2023-04-18", 16.8,
+  "2023-04-25", 14.1,
+  "2023-05-02", NA,
+  "2023-05-09", 10.5,
+  "2023-05-16", 11.1,
+  "2023-05-23", 12.5,
+  "2023-05-30", 10.0,
+  "2023-06-06", 9.6,
+  "2023-06-13", 9.0,
+  "2023-06-20", 9.7,
+  "2023-06-27", 10.1,
+  "2023-07-04", 10.4,
+  "2023-07-11", 10.2,
+  "2023-07-18", 8.4,
+  "2023-07-25", 9.1,
+  "2023-08-01", 12.0,
+  "2023-08-08", 12.1,
+  "2023-08-15", 10.0,
+  "2023-08-22", 9.7,
+  "2023-08-29", 17.4,
+  "2023-09-05", 26.1,
+  "2023-09-12", 30.5,
+  "2023-09-19", 32.1,
+  "2023-09-26", 37.6,
+  "2023-10-03", 34.5,
+  "2023-10-10", 34.8,
+  "2023-10-17", 35.7,
+  "2023-10-24", 33.3,
+  "2023-10-31", 29.7,
+  "2023-11-07", 25.1,
+  "2023-11-14", 23.5,
+  "2023-11-21", 21.9,
+  "2023-11-28", 19.9,
+  "2023-12-05", 14.7,
+  "2023-12-12", 13.0,
+  "2023-12-19", 13.8,
+  "2023-12-26", 15.0,
+  "2024-01-02", NA,
+  "2024-01-09", 16.3,
+  "2024-01-16", 18.2,
+  "2024-01-23", 21.4,
+  "2024-01-30", 19.8,
+  "2024-02-06", 19.4,
+  "2024-02-13", 21.3,
+  "2024-02-20", 21.6,
+  "2024-02-27", 21.7,
+  "2024-03-05", 21.1,
+  "2024-03-12", 21.2,
+  "2024-03-19", 23.3,
+  "2024-03-26", 23.9,
+  "2024-04-02", 28.7,
+  "2024-04-09", 30.0,
+  "2024-04-16", 30.2,
+  "2024-04-23", 30.1,
+  "2024-04-30", 28.3,
+  "2024-05-07", 25.1,
+  "2024-05-14", 25.6,
+  "2024-05-21", 25.7,
+  "2024-05-28", 26.2,
+  "2024-06-04", 21.1,
+  "2024-06-11", 24.0,
+  "2024-06-18", 25.8,
+  "2024-06-25", 28.4,
+  "2024-07-02", 33.4,
+  "2024-07-09", 32.9,
+  "2024-07-16", 30.8,
+  "2024-07-23", 27.1,
+  "2024-07-30", 21.4,
+  "2024-08-06", 17.1,
+  "2024-08-13", 20.0,
+  "2024-08-20", 16.6,
+  "2024-08-27", 16.4,
+  "2024-09-03", 12.6,
+  "2024-09-10", 9.7,
+  "2024-09-17", 11.6,
+  "2024-09-24", 11.6,
+  "2024-10-01", 14.3,
+  "2024-10-08", 18.3,
+  "2024-10-15", 15.5,
+  "2024-10-22", 16.7,
+  "2024-10-29", 14.9,
+  "2024-11-05", 16.4,
+  "2024-11-12", 14.5,
+  "2024-11-19", 16.3,
+  "2024-11-26", 15.2,
+  "2024-12-03", 14.9,
+  "2024-12-10", 12.7,
+  "2024-12-17", 15.0,
+  "2024-12-24", 17.4,
+  "2024-12-31", NA,
+  "2025-01-07", 16.5,
+  "2025-01-14", 21.5,
+  "2025-01-21", 20.5,
+  "2025-01-28", 17.4,
+  "2025-02-04", 13.7,
+  "2025-02-11", 13.1,
+  "2025-02-18", 12.5,
+  "2025-02-25", 9.4,
+  "2025-03-04", 2.5,
+  "2025-03-11", 2.1,
+  "2025-03-18", 3.8,
+  "2025-03-25", 5.8,
+  "2025-04-01", 4.4,
+  "2025-04-08", 0.0,
+  "2025-04-15", 0.9,
+  "2025-04-22", 1.1,
+  "2025-04-29", NA,
+  "2025-05-06", 0.0,
+  "2025-05-13", 7.4,
+  "2025-05-20", 8.4,
+  "2025-05-27", 9.4,
+  "2025-06-03", 10.0,
+  "2025-06-10", 10.0,
+  "2025-06-17", 13.4,
+  "2025-06-24", 10.0,
+  "2025-07-01", 10.0,
+  "2025-07-08", 11.3,
+  "2025-07-15", 10.2,
+  "2025-07-22", 10.0,
+  "2025-07-29", 12.2,
+  "2025-08-05", 10.0,
+  "2025-08-12", 10.0,
+  "2025-08-19", 10.5,
+  "2025-08-26", 10.0,
+  "2025-09-02", 10.0,
+  "2025-09-09", 10.0,
+  "2025-09-16", 10.0,
+  "2025-09-23", 10.0,
+  "2025-09-30", 10.0,
+  "2025-10-07", 10.0,
+  "2025-10-14", 10.0,
+  "2025-10-21", 10.0,
+  "2025-10-28", 10.0,
+  "2025-11-04", 15.0,
+  "2025-11-11", 15.0,
+  "2025-11-18", 20.0,
+  "2025-11-25", 20.0,
+  "2025-12-02", 25.1,
+  "2025-12-09", 25.1,
+  "2025-12-16", 25.1,
+  "2025-12-23", 25.1,
+  "2025-12-30", 25.1
+)
 
-meti_subsidy_monthly <- meti_subsidy %>% 
-  mutate(
-    subsidy_lag2 = lag(subsidy, 2),
-    month = yearmonth(week)
-    ) %>% 
-  group_by(month) %>% 
-  summarize(subsidy = mean(subsidy_lag2))
+meti_subsidy <- meti_subsidy|>
+  filter(!is.na(subsidy)) |>
+  mutate(month = yearmonth(start_date)) |>
+  summarize(subsidy = mean(subsidy), .by = month)
 ```
 
-```{r meti_vs_crude}
-
-retail |> 
-  filter(date >= "2022-01-01") |> 
-  mutate(week = yearweek(date)) |> 
-  select(week, retail_actual = price) |> 
-  left_join(meti_dubai_weekly |> rename(crude_oil = price), by = "week") |> 
-  left_join(meti_subsidy, by = "week") |> 
-  mutate(
-    subsidy = if_else(is.na(subsidy) & year(week) == 2022, 0, subsidy),
-    retail_meti_new = retail_actual + lag(subsidy, 2) + lag(crude_oil) - lag(crude_oil, 2),
-    retail_meti_new = if_else(week >= make_yearweek(2025, 22),
-                              retail_actual + lag(subsidy, 2),
-                              retail_meti_new),
-    retail_meti_old = lag(crude_oil) + 170.2 - 59.4
-    ) |> 
-  select(week, crude_oil, retail_meti_new) |> 
-  filter(week >= make_yearweek(2022, 3)) |> 
-  mutate(
-    crude_oil = lag(crude_oil) + 170.2 - 59.4
-  ) |> 
-  pivot_longer(-week) |> 
-  mutate(
-    name = factor(name,
-                  levels = c("retail_meti_new", "crude_oil"),
-                  labels = c("Retail price\nwithout subsidy\n(left scale)",
-                             "Crude oil price,\n1 wk earlier\n(right scale)"))
-    ) |> 
-  filter(week >= yearweek("2022 W04")) |> 
-  ggplot(aes(week, value)) +
-  geom_line(aes(color = name)) +
-  scale_y_continuous(
-    name = "Yen per litre",
-    sec.axis = sec_axis(~ .x - 170.2 + 59.4),
-    limits = c(160, 220)
-  ) +
-  labs(x = "Weeks", color = NULL,
-       title = "Gasoline retail prices without subsidy estimated by METI are\nconstantly higher than those suggested by crude oil price movement",
-       caption = "Source: Agency for Natural Resources and Energy") +
-  theme(plot.caption.position = "plot")
-```
-
-### Dubai crude oil price (monthly)
-
-I get monthly Dubai crude oil prices in USD / barrel and exchange rates in JPY / USD from [FRED by St. Louis FRB](https://fred.stlouisfed.org/), and transform them into JPY / litre using 1 barrel = 158.987 litre.
-
-```{r dubai_monthly}
-dubai_monthly <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "2000-01-01")  %>%
-  pivot_wider(names_from = symbol, values_from = price) %>%
-  mutate(
-    dubai = POILDUBUSDM * EXJPUS / 158.987,
-    month = yearmonth(date)
-    ) %>%
-  select(month, dubai)
-```
+### Combine
 
 ```{r combine}
-combo <- retail_price_month %>% 
-  filter_index("2000 Jul" ~ .) %>% 
-  left_join(wholesale_price, by = "month") %>% 
-  left_join(import_price, by = "month") %>% 
-  left_join(meti_subsidy_monthly, by = "month") %>% 
-  left_join(dubai_monthly, by = "month") %>%
-  replace_na(list(subsidy = 0)) %>%
+
+combo <- wholesale |> 
+  left_join(retail, by = "month") |> 
+  left_join(dubai, by = "month") |> 
+  left_join(meti_subsidy, by = "month") |> 
   mutate(
-    crude_1mo_ahead_tax_subsidy = lead(crude_oil_price) + 53.8 - subsidy,
-    diff_rw = retail_price - wholesale_price,
-    diff_wc = wholesale_price - crude_1mo_ahead_tax_subsidy,
-    diff_cd = lead(crude_oil_price) - dubai
-    ) %>%
-  pivot_longer(retail_price:diff_cd) %>% 
-  update_tsibble(key = name)
-```
-
-## Plot retail, wholesale gas and crude oil prices
-
-Yes, both retail and wholesale prices are rising, mainly due to rising imported crude oil prices.
-
-```{r plot1, warning=FALSE}
-
-combo %>% 
-  filter(name %in% c("retail_price", "wholesale_price",
-                     "crude_1mo_ahead_tax_subsidy")) %>% 
-  autoplot(value) +
-  geom_hline(yintercept = 170/1.1, color = "gray50") +
-  annotate("text", x = yearmonth("2010 Jan"), y = 160, label = "155 (170 including consumption tax)", size = 4) +
-  geom_hline(yintercept = 53.8, color = "gray50") +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "retail_price") %>% 
-              tail(1),
-            hjust = 1, vjust = -0.5) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "wholesale_price") %>% 
-              tail(1),
-            hjust = 1, vjust = -0.5) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = combo %>% 
-              filter(!is.na(value)) %>% 
-              filter(name == "crude_plus_tax") %>% 
-              tail(1),
-            hjust = 1, vjust = -0.5) +
-  annotate("text", x = yearmonth("2010 Jan"), y = 59, label = "53.8 gasoline tax", size = 4) +
-  annotate("text", x = yearmonth("2000 Jan"), y = 110, label = "Retail", size = 4) +
-  annotate("text", x = yearmonth("2001 Jan"), y = 90, label = "Wholesale", size = 4) +
-  annotate("text", x = yearmonth("2001 Jan"), y = 70, label = "Imported crude oil price one month ahead, minus subsidy (right axis)", size = 4, hjust = 0) +
-  expand_limits(y = 0) +
-  scale_y_continuous(
-    name = "Yen per litre\n(excluding consumption tax)",
-    sec.axis = sec_axis(~ .x - 53.8)
-  ) +
-  labs(title = "Gasoline and imported crude oil prices in Japan") +
-  theme(legend.position = "none")
-```
-
-```{r wholesale_vs_crude, warning=FALSE}
-
-wholesale_crude <- combo %>% 
-  filter(name %in% c("wholesale_price", "crude_oil_price")) %>% 
-  pivot_wider(names_from = name, values_from = value) %>% 
-  na.omit()
-
-p_1c <- wholesale_crude %>% 
-  ggplot(aes(lead(crude_oil_price), wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p0c <- wholesale_crude %>% 
-  ggplot(aes(crude_oil_price, wholesale_price)) +
-  geom_point(alpha = 0.2) +
-  coord_fixed()
-
-p1c <- wholesale_crude %>% 
-ggplot(aes(lag(crude_oil_price), wholesale_price)) +
-  geom_point(alpha = 0.2) +
-coord_fixed()
-```
-
-Correlations are `r cor(wholesale_crude$crude_oil_price[-1], wholesale_crude$wholesale_price[-nrow(wholesale_crude)]) %>% round(4)` if wholesales lead Japan customs by 1 month, `r cor(wholesale_crude$crude_oil_price, wholesale_crude$wholesale_price) %>% round(4)` if wholesales is concurrent with Japan customs, and `r cor(wholesale_crude$crude_oil_price[-nrow(wholesale_crude)], wholesale_crude$wholesale_price[-1]) %>% round(4)` if wholesales lag Japan customs by 1 month. The highest correlation is if wholesales is concurrent with Japan customs. However, METI gives subsidy assuming that wholesales lead Japan customs by 1 month. So I regard imported crude oil price one month ahead, plus tax and minus subsidy as wholesalers' cost.
-
-```{r wholesale_vs_crude_plot, warning=FALSE}
-p_1c + p0c + p1c +
-  plot_layout(nrow = 1) +
-  plot_annotation(
-  title = "Wholesale price vs imported crude oil price (lead, concurrent and lag)"
-)
-```
-
-## Plot price differences
-
-### Retailers' margin
-
-Differences between retail and wholesale prices have been increasing since 2016. The average difference was `r combo %>% filter(name == "diff_rw") %>% filter_index("2000 Jul" ~ "2015 Dec") %>% pull(value) %>% mean() %>% round()` yen per litre from 2000 Jul to 2015 Dec, and is `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(value) %>% round()` in `r combo %>% filter(name == "diff_rw", !is.na(value)) %>% slice_tail(n = 1) %>% pull(month)`. This may reflect the reduced competition among retailers. You can see the number of retailers has constantly decreased since around 1995 in the last page of [this material (Japanese)](https://www.enecho.meti.go.jp/category/resources_and_fuel/distribution/hinnkakuhou/data/2021_07_30_01.pdf) from Agency for National Resources Energy.
-
-```{r retailers_margin_plot}
-
-combo %>% 
-  filter(name == "diff_rw", !is.na(value)) %>% 
-  filter(month >= yearmonth("2010 Jan")) %>%
-  autoplot(value) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = . %>% slice_tail(n = 1),
-            hjust = -0.2, vjust = 0) +
-  expand_limits(y = 0) +
-  labs(y = "Yen per litre",
-       title = "Retailers' margin = retail price - wholesale price")
-
-```
-
-```{r retailers_margin_table}
-mean_rw_diff_2021 <- combo %>% 
-  filter(name == "diff_rw", !is.na(value)) %>% 
-  filter(year(month) == 2021) %>% 
-  as_tibble() %>% 
-  summarize(mean_diff = mean(value)) %>% 
-  pull(mean_diff)
-
-combo %>% 
-  filter(name == "diff_rw", !is.na(value)) %>% 
-  mutate(
-    usual_margin = mean_rw_diff_2021,
-    diff_from_mean = value - usual_margin
-    ) %>% 
-  select(-name) %>% 
-  filter(month >= yearmonth("2022 Feb")) %>% 
-  knitr::kable(format = "simple",
-               digits = 1,
-               col.names = c("Month", "Margin", "Usual margin","Excess margin"),
-               caption = "Retailers' excess margin (yen / liter)")
-```
-
-The average retailers' margin in 2021 was
-`r mean_rw_diff_2021 %>% round(digits = 1)`. If I subtract it from retailers' margin, I get excess margin above.
-
-### Wholesalers' margin over imported crude oil price one month ahead plus tax minus subsidy
-
-Differences between wholesale price and imported crude oil price one month ahead plus gasoline tax minus subsidy have also been increasing. This may reflect the reduced competition among wholesalers, who have got monopolistic power by consolidation.
-
-```{r wholesalers_margin_plot}
-
-combo %>% 
-  filter(name == "diff_wc", !is.na(value)) %>% 
-  filter(month >= yearmonth("2010 Jan")) %>%
-  autoplot(value) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = . %>% slice_tail(n = 1),
-            hjust = -0.2, vjust = 0) +
-  labs(y = "Yen per litre",
-       title = "Wholesalers' margin = wholesale price\n- imported crude oil price one month ahead\n- gasoline tax\n+ subsidy")
-
-```
-
-```{r wholesalers_margin_table}
-mean_wc_diff_2021 <- combo %>% 
-  filter(name == "diff_wc", !is.na(value)) %>% 
-  filter(year(month) == 2021) %>% 
-  as_tibble() %>% 
-  summarize(mean_diff = mean(value)) %>% 
-  pull(mean_diff)
-
-combo %>% 
-  filter(name == "diff_wc", !is.na(value)) %>% 
-  mutate(
-    usual_margin = mean_wc_diff_2021,
-    diff_from_mean = value - usual_margin
-    ) %>% 
-  select(-name) %>% 
-  filter(month >= yearmonth("2022 Feb")) %>% 
-  knitr::kable(format = "simple",
-               digits = 1,
-               col.names = c("Month", "Margin", "Usual margin","Excess margin"),
-               caption = "Wholesalers' excess margin (yen / liter)")
-```
-
-The average wholesalers' margin in 2021 was
-`r mean_wc_diff_2021 %>% round(digits = 1)`. If I subtract it from retailers' margin, I get excess margin above.
-
-### Difference between CIF and FOB
-
-Difference between CIF and FOB has widened since 2022, probably because Russian invasion of Ukraine and depreciated yen have raised insurance and transport fees.
-
-```{r cif_fob_plot}
-combo %>% 
-  filter(name == "diff_cd", !is.na(value)) %>% 
-  filter(month >= yearmonth("2010 Jan")) %>%
-  autoplot(value) +
-  geom_text(aes(label = month(month, label = TRUE)),
-            data = . %>% slice_tail(n = 1),
-            hjust = -0.2, vjust = 0) +
-  labs(y = "Yen per litre",
-       title = "Imported crude oil price 1 month ahead (CIF)\n- Dubai crude oil price (FOB)")
-```
-
-## Dubai crude oil price (weekly)
-
-I get daily data from [oilprice.com](https://oilprice.com/jp/%E5%8E%9F%E6%B2%B9%E4%BE%A1%E6%A0%BC%E3%83%81%E3%83%A3%E3%83%BC%E3%83%88).
-
-```{r get_daily_dubai}
-
-dubai_daily <- tribble(
-  ~date, ~price,
-  "2021-11-22", 80.548,
-  "2021-11-24", 81.201,
-  "2021-11-26", 80.084,
-  "2021-11-29", 80.305,
-  "2021-11-30", 80.276,
-  "2021-12-02", 80.276,
-  "2021-12-03", 68.909,
-  "2021-12-06", 71.654,
-  "2021-12-08", 73.693,
-  "2021-12-10", 73.189,
-  "2021-12-14", 72.223,
-  "2021-12-15", 72.383,
-  "2021-12-17", 72.432,
-  "2021-12-20", 71.655,
-  "2021-12-22", 72.71,
-  "2021-12-27", 73.2,
-  "2021-12-30", 73.19,
-  "2021-12-31", 73.185,
-  "2022-01-03", 73.185,
-  "2022-01-04", 73.185,
-  "2022-01-05", 78.812,
-  "2022-01-06", 79.695,
-  "2022-01-07", 79.535,
-  "2022-01-07", 79.535,
-  "2022-01-10", 78.887,
-  "2022-01-11", 80.789,
-  "2022-01-12", 81.342,
-  "2022-01-13", 81.297,
-  "2022-01-14", 82.269,
-  "2022-01-18", 83.221,
-  "2022-01-19", 83.559,
-  "2022-01-20", 83.496,
-  "2022-01-21", 83.291,
-  "2022-01-24", 82.868,
-  "2022-01-25", 83.213,
-  "2022-01-26", 83.389,
-  "2022-01-27", 83.333,
-  "2022-01-28", 83.362,
-  "2022-01-31", 83.455,
-  "2022-02-01", 83.455,
-  "2022-02-04", 91.056,
-  "2022-02-07", 90.757,
-  "2022-02-08", 89.282,
-  "2022-02-09", 89.883,
-  "2022-02-10", 89.918,
-  "2022-02-11", 91.79,
-  "2022-02-14", 92.605,
-  "2022-02-15", 90.859,
-  "2022-02-16", 91.558,
-  "2022-02-18", 90.897,
-  "2022-02-22", 91.838,
-  "2022-02-24", 92.074,
-  "2022-02-25", 91.928,
-  "2022-02-28", 92.34,
-  "2022-03-01", 92.34,
-  "2022-03-02", 92.34,
-  "2022-03-03", 106.578,
-  "2022-03-04", 114.95,
-  "2022-03-07", 118.18,
-  "2022-03-08", 122.532,
-  "2022-03-09", 110.86
-) %>% 
-  mutate(date = as.Date(date))
-
-yen_dollar_daily <- tq_get(c("DEXJPUS"), get = "economic.data", from = "2020-01-01") %>% 
-  select(-symbol)
-
-yen_dollar_daily <- yen_dollar_daily %>% 
-  rename(yen_dollar_rate = price)
-
-dubai_daily2 <- dubai_daily %>% 
-  left_join(yen_dollar_daily, by = "date") %>% 
-  mutate(dubai_oil_price = price * yen_dollar_rate / 158.99) %>% 
-  select(date, dubai_oil_price)
-
-dubai_weekly <- dubai_daily2 %>% 
-  mutate(week = yearweek(date)) %>% 
-  group_by(week) %>% 
-  summarize(price = mean(dubai_oil_price, na.rm = TRUE))
-
-```
-
-Weekly prices are not so different between oilprice.com and METI.
-
-```{r dubai_chart}
-
-dubai_weekly %>% 
-  mutate(source = "oilprice.com") %>% 
-  bind_rows(meti_dubai_weekly %>% mutate(source = "METI")) %>% 
-  ggplot(aes(week, price, color = source)) +
-  geom_line() +
-  scale_x_yearweek(date_labels = "%b %d") +
-  labs(x = NULL, y = "Yen per liter", color = "Data source",
-       title = "Dubai crude oil prices (weekly)")
-```
-
-So I create weekly prices data by combining oilprice.com in 2021 and METI in 2022.
-
-```{r dubai_weekly}
-
-dubai_weekly2 <- dubai_weekly %>% 
-  filter(year(week) == 2021) %>% 
-  bind_rows(meti_dubai_weekly %>% filter(year(week) >= 2022)) %>% 
-  rename(dubai = price)
-
-retail_price_weekly <- retail_price %>% 
-  bind_rows(
-    tibble(date = c(as.Date("2022-05-02"),
-                    as.Date("2023-01-02"),
-                    as.Date("2023-05-01"),
-                    as.Date("2024-01-01")))
-  ) %>% 
-  arrange(date) %>% 
-  fill(price:price_excl_tax, .direction = "up") %>%
-  mutate(
-    week = yearweek(date),
-    price = 1.1 * price_excl_tax # include constant 10 percent consumption tax
-    ) %>% 
-  select(week, actual = price) %>% 
-  left_join(dubai_weekly2, by = "week") %>% 
-  left_join(meti_subsidy, by = "week")
-
-effect_by_lag <- function(lag) {
-  retail_price_weekly %>% 
-    mutate(
-      dubai_lag_n = lag(dubai, lag),
-      diff_retail_crude = actual[week == yearweek("2022 W04")] - 
-        dubai_lag_n[week == yearweek("2022 W04")],
-      counterfactual_wo_subsidy = dubai_lag_n + diff_retail_crude,
-      effect_by_subsidy = counterfactual_wo_subsidy - actual,
-      subsidy_lag = lag(subsidy, 2),
-      subsidy_lag = replace_na(subsidy_lag, 0),
-      counterfactual_with_subsidy = counterfactual_wo_subsidy - subsidy_lag
-      ) %>% 
-    filter(week >= yearweek("2022 W02"))
-}
-
-effects <- map_dfr(0:5, effect_by_lag, .id = "lag") %>% 
-  mutate(
-    lag = as.numeric(lag),
-    lag = lag - 1
+    gas_tax = if_else(month < yearmonth("2026-01"), 53.8, 28.7),
+    subsidy = if_else(is.na(subsidy), 0, subsidy),
+    wholesalers_margin = wholesale_price - (dubai_oil_price + gas_tax - subsidy),
+    retailers_margin = retail_price - wholesale_price
   )
 
 ```
 
-METI calculates subsidy effects on retail prices by assuming that retail prices will reflect subsidies 2 weeks later. I have no reason to disagree.
+## Plot
 
-METI also assumes that there is 2 weeks lag between Dubai crude oil prices and retail prices (0 week from Dubai to wholesalers and 2 weeks from wholesalers to retailers). I disagree. In the physical terms, it is impossible to carry oil from Dubai to retailers in Japan in 2 weeks. In the accounting terms, all major wholesalers evaluate stocks by average method, not by LIFO (Last In First Out). In the past observations from the monthly data, wholesale prices usually lag Dubai crude oil prices by 1 month.
+```{r margin_plot}
 
-If we assume 3 weeks lag instead, subsidy effects are smaller. When effects are smaller than subsidies, subsidies are not fully reflected in retail prices, and wholesalers and/or retailers are getting benefits from subsidies.
-
-```{r actual_counterfactual}
-
-effects %>% 
-  pivot_longer(c(actual, counterfactual_with_subsidy, counterfactual_wo_subsidy)) %>% 
-  mutate(
-    name = recode(name,
-                  actual = "Actual prices",
-                  counterfactual_wo_subsidy = "Counterfactual prices\nif no subsidy",
-                  counterfactual_with_subsidy = "Prices if subsidies are\nfully reflected")
-  ) %>% 
-  ggplot(aes(week, value, color = name)) +
-  geom_line() +
-  scale_x_yearweek(date_labels = "%m/\n%d") +
-  facet_wrap(vars(lag)) +
-  labs(x = NULL, y = "Yen per litre", color = NULL,
-       title = "Actual and counterfactual retail prices\nby # of week lags from Dubai to retail")
-
-```
-
-```{r subsidy_effect, warning=FALSE}
-
-effects %>% 
-  group_by(lag) %>% 
-  mutate(
-    subsidy = lag(subsidy, 2),
-    subsidy = replace_na(subsidy, 0)
-  ) %>% 
-  ungroup() %>% 
-  pivot_longer(c(subsidy, effect_by_subsidy)) %>% 
-  mutate(
-    name = recode(name,
-                  effect_by_subsidy = "Effect",
-                  subsidy = "Subsidy")
-  ) %>% 
-  filter(week >= yearweek("2022 W05")) %>% 
-  ggplot(aes(week, value, fill = name)) +
-  geom_col(position = "identity", alpha = 0.5) +
-  scale_fill_manual(values = c("red", "blue")) +
-  scale_x_yearweek(date_labels = "%m/\n%d") +
-  facet_wrap(vars(lag)) +
-  labs(x = NULL, y = "Yen per litre", fill = NULL,
-       title = "Effect of subsidies by # of week lags from Dubai to retail")
+combo |> 
+  filter(month >= yearmonth("2010 Jan")) |> 
+  pivot_longer(wholesalers_margin:retailers_margin) |> 
+  ggplot(aes(month, value)) +
+  geom_rect(xmin = as.Date("2022-01-01"), xmax = as.Date("2025-12-01"), 
+            ymin = 0, ymax = 40, fill = "gray90") +
+  geom_line(aes(color = name), show.legend = FALSE) +
+  annotate("text", x = as.Date("2022-01-01"), y = 10,
+           label = "Subsidy period", hjust = -0.2) +
+  annotate("text", x = as.Date("2015-01-01"), y = 5,
+           label = "Retailers' margin", hjust = -0.2) +
+  annotate("text", x = as.Date("2015-01-01"), y = 30,
+           label = "Wholesalers' margin", hjust = -0.2) +
+  scale_y_continuous(limits = c(0, 40), expand = expansion(add = c(0, 0))) +
+  labs(x = NULL, y = "Yen per litre",
+       title = "Retailers' margin = retail price - wholesale price\nWholesalers' margin = wholesale price - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
+       caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, etc.")
 
 ```
 
-```{r normal_margin}
-
-normal_margin <- retail_price_weekly %>% 
-  mutate(
-    normal_diff = actual[week == yearweek("2022 W04")] - dubai
-    ) %>% 
-  filter(week >= yearweek("2021 W50"),
-         week <= yearweek("2022 W04")) %>% 
-  pull(normal_diff) %>% 
-  rev()
-
-```
-
-Above calculation assumes there is a constant margin between Dubai crude oil prices and retail prices. Lag 0 to 5 assumes margins `r normal_margin %>% round(1)` respectively.
-
-Lag 2 assumes `r normal_margin[3] %>% round(1)`. Let us assume this margin of `r normal_margin[3] %>% round(1)` over all lags between Dubai crude oil prices and retail prices.
-
-```{r effect_by_lag2}
-
-effect_by_lag2 <- function(lag) {
-  retail_price_weekly %>% 
-    mutate(
-      dubai_lag_n = lag(dubai, lag),
-      diff_retail_crude = normal_margin[3],
-      counterfactual_wo_subsidy = dubai_lag_n + diff_retail_crude,
-      effect_by_subsidy = counterfactual_wo_subsidy - actual,
-      subsidy_lag = lag(subsidy, 2),
-      subsidy_lag = replace_na(subsidy_lag, 0),
-      counterfactual_with_subsidy = counterfactual_wo_subsidy - subsidy_lag
-    ) %>% 
-    filter(week >= yearweek("2022 W02"))
-}
-
-effects2 <- map_dfr(0:5, effect_by_lag2, .id = "lag") %>% 
-  mutate(
-    lag = as.numeric(lag),
-    lag = lag - 1
-  )
-```
-
-```{r actual_counterfactual2}
-
-effects2 %>% 
-  pivot_longer(c(actual, counterfactual_with_subsidy, counterfactual_wo_subsidy)) %>% 
-  mutate(
-    name = recode(name,
-                  actual = "Actual prices",
-                  counterfactual_wo_subsidy = "Counterfactual prices\nif no subsidy",
-                  counterfactual_with_subsidy = "Prices if subsidies are\nfully reflected")
-  ) %>% 
-  ggplot(aes(week, value, color = name)) +
-  geom_line() +
-  scale_x_yearweek(date_labels = "%m/\n%d") +
-  facet_wrap(vars(lag)) +
-  labs(x = NULL, y = "Yen per litre", color = NULL,
-       title = "Actual and counterfactual retail prices\nby # of week lags from Dubai to retail\nassuming fixed margin across all lags")
-
-```
-
-```{r subsidy_effect2, warning=FALSE}
-
-effects2 %>% 
-  pivot_longer(c(subsidy_lag, effect_by_subsidy)) %>% 
-  mutate(
-    name = recode(name,
-                  effect_by_subsidy = "Effect",
-                  subsidy_lag = "Subsidy")
-  ) %>% 
-  filter(week >= yearweek("2022 W05")) %>% 
-  ggplot(aes(week, value, fill = name)) +
-  geom_col(position = "identity", alpha = 0.5) +
-  scale_fill_manual(values = c("red", "blue")) +
-  scale_x_yearweek(date_labels = "%m/\n%d") +
-  facet_wrap(vars(lag)) +
-  labs(x = NULL, y = "Yen per litre", fill = NULL,
-       title = "Effect of subsidies by # of week lags from Dubai to retail\nassuming fixed margin across all lags")
-
-```
-
-As I assume fixed margin based on lag 2 assumption, lag 2 does not change from the previous plots. In lags 3 to 5, there are less effects of subsidies than the previous plots.
-
-From this analysis, it is clear that the assumption on lag and normal margin between Dubai crude oil prices and retail gasoline prices is very important to calculate the effects by subsidies. METI assumes lag of 2 weeks from Dubai to retailers (0 week from Dubai to wholesalers and 2 weeks from wholesalers to retailers), and normal margin `r normal_margin[3] %>% round(1)` yen per litre between Dubai and retail prices. However, the monthly data analysis in the previous chapter suggests that there usually is one month lag from Dubai to retailers, and that `r normal_margin[3] %>% round(1)` yen per litre gap between Dubai and retail prices is historically large. I hope I will find out whether METI's assumption is reasonable or not, while I update this page.
-
-## Change of METI's effects calculation from March 14, 2022
-
-METI changed calculation method from March 14, 2022. The new method is:
-
-1.  Reset the last week counterfactual retail price without subsidy to the last week actual retail price plus subsidy.
-
-2.  Add Dubai crude oil price change from the last week to this week to it, and you will get this week counterfactual retail price without subsidy.
-
-I once thought this is a minor change, as METI basically continues to assume that retail prices will reflect subsidies 2 weeks later, and that there is 2 weeks lag between Dubai crude oil prices and retail prices. No, this is not a minor change. The new method makes effects closer to subsidies inherently, and allows wholesalers and/or retailers to take as much money as they like.
-
-I tweet about this [here (English)](https://twitter.com/mitsuoxv/status/1536998279916924929?s=20&t=arc-0ZS59Qpugt1CcXDGVA) and [here (Japanese)](https://twitter.com/mitsuoxv/status/1537004102697136128?s=20&t=arc-0ZS59Qpugt1CcXDGVA).
-
-```{r}
-
-effects_lag2 <- effects %>% 
-  filter(lag == 2) %>%
-  mutate(
-    subsidy = lag(subsidy, 2),
-    subsidy = replace_na(subsidy, 0)
-  )
-
-p_old <- effects_lag2 %>% 
-  pivot_longer(c(subsidy, effect_by_subsidy)) %>% 
-  mutate(
-    name = recode(name,
-                  effect_by_subsidy = "Effect",
-                  subsidy = "Subsidy")
-  ) %>% 
-  filter(week >= yearweek("2022 W11")) %>% 
-  ggplot(aes(week, value, fill = name)) +
-  geom_col(position = "identity", alpha = 0.5) +
-  scale_fill_manual(values = c("red", "blue")) +
-  scale_x_yearweek(date_labels = "%m/\n%d") +
-  ylim(0, 50) +
-  labs(x = NULL, y = "Yen per litre", fill = NULL,
-       title = "Old method = lag 2") +
-  theme(legend.position = "none")
-
-# from METI, small disconnect of Dubai in 2022 W08
-effects_lag2[effects_lag2$week == yearweek("2022 W08"), "dubai"] <- 71.5
-
-p_new <- effects_lag2 %>% 
-  mutate(
-    reset_last_week = lag(actual + subsidy),
-    dubai_diff = lag(dubai - lag(dubai), 2),
-    effect = reset_last_week + dubai_diff - actual
-  ) %>% 
-  pivot_longer(c(subsidy, effect)) %>% 
-  mutate(
-    name = recode(name,
-                  effect = "Effect",
-                  subsidy = "Subsidy")
-  ) %>% 
-  filter(week >= yearweek("2022 W11")) %>% 
-  ggplot(aes(week, value, fill = name)) +
-  geom_col(position = "identity", alpha = 0.5) +
-  scale_fill_manual(values = c("red", "blue")) +
-  scale_x_yearweek(date_labels = "%m/\n%d") +
-  ylim(0, 50) +
-  labs(x = NULL, y = NULL, fill = NULL,
-       title = "New method")
-
-p_old | p_new
-
-```
-
-## Wholesalers reported record profits for FY 2021
-
-I tweeted about this [here](https://twitter.com/mitsuoxv/status/1519833594046283781).
-
-## Wholesalers' margin over Dubai crude oil price
-
-Although I disagree to the METI assumptions, first, I assume them to check whether wholesalers are acting as METI expected. So I assume that Dubai crude oil price and subsidy will be reflected to wholesale gas price 10 days (2 weeks) later, and that the usual margin of wholesalers is the same as that of 2022 Jan, which is higher than average but within the historical range. Then, I calculate how much the actual wholesale gas price exceeds the expected price if subsidy is fully reflected. From 2022 Jan to 2022 Apr, the excesses are small.
-
-```{r}
-dubai_monthly <- dubai_weekly2 %>% 
-  mutate(
-    dubai_lag = lag(dubai, 2),
-    month = yearmonth(week)
-    ) %>% 
-  group_by(month) %>% 
-  summarize(dubai = mean(dubai_lag))
-
-dubai_monthly %>% 
-  left_join(meti_subsidy_monthly, by = "month") %>% 
-  left_join(combo %>%
-              filter(name == "wholesale_price") %>%
-              select(month, wholesale_price = value),
-            by = "month") %>% 
-  replace_na(list(subsidy = 0)) %>% 
-  filter(!is.na(wholesale_price), !is.na(dubai)) %>% 
-  mutate(
-    gas_tax = 53.8,
-    usual_margin = 23.7,
-    expected_wholesale_price = dubai + gas_tax + usual_margin - subsidy,
-    diff = wholesale_price - expected_wholesale_price
-    ) %>% 
-  relocate(wholesale_price, .after = month) %>% 
-  filter(month >= yearmonth("2022 Jan")) %>% 
-  knitr::kable(format = "simple",
-               digits = 1,
-               col.names = c("Month", "Actual", "Dubai crude", "Subsidy", "Gas tax", "Usual margin", "Expected", "Excess"),
-               caption = "Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 2 weeks lag of Dubai")
-```
-
-Next, I change the assumption on lag of Dubai price from 10 days (2 weeks) based on LIFO to one month (5 weeks) based on the average method of inventory evaluation actually adopted by wholesalers. In Feb and Mar, when Dubai price was rising, excesses were large enough to show most subsidy was taken by wholesalers. In Apr, when Dubai in plateau, excess was small.
-
-```{r}
-dubai_monthly_lag5 <- dubai_weekly2 %>% 
-  mutate(
-    dubai_lag = lag(dubai, 5),
-    month = yearmonth(week)
-    ) %>% 
-  group_by(month) %>% 
-  summarize(dubai = mean(dubai_lag))
-
-dubai_monthly_lag5 %>% 
-  left_join(meti_subsidy_monthly, by = "month") %>% 
-  left_join(combo %>%
-              filter(name == "wholesale_price") %>%
-              select(month, wholesale_price = value),
-            by = "month") %>% 
-  replace_na(list(subsidy = 0)) %>% 
-  filter(!is.na(wholesale_price), !is.na(dubai)) %>% 
-  mutate(
-    gas_tax = 53.8,
-    usual_margin = 23.7,
-    expected_wholesale_price = dubai + gas_tax + usual_margin - subsidy,
-    diff = wholesale_price - expected_wholesale_price
-    ) %>% 
-  relocate(wholesale_price, .after = month) %>% 
-  filter(month >= yearmonth("2022 Feb")) %>% 
-  knitr::kable(format = "simple",
-               digits = 1,
-               col.names = c("Month", "Actual", "Dubai crude", "Subsidy", "Gas tax", "Usual margin", "Expected", "Excess"),
-               caption = "Wholesale gas price (yen / liter): 2 weeks lag of subsidy, and 5 weeks lag of Dubai")
-```
-
-EOL
+END
