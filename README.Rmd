@@ -335,7 +335,7 @@ combo |>
   pivot_longer(wholesalers_margin:retailers_margin) |> 
   ggplot(aes(month, value)) +
   geom_rect(xmin = as.Date("2022-01-01"), xmax = as.Date("2025-12-01"), 
-            ymin = 0, ymax = 40, fill = "gray90") +
+            ymin = -Inf, ymax = Inf, fill = "gray90", alpha = 0.3) +
   geom_line(aes(color = name), show.legend = FALSE) +
   annotate("text", x = as.Date("2022-01-01"), y = 10,
            label = "Subsidy period", hjust = -0.2) +
