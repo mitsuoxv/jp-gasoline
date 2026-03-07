@@ -5,10 +5,12 @@ date: "2026-03-03"
 output: 
   github_document:
     toc: TRUE
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(readxl)
@@ -346,7 +348,7 @@ combo |>
   scale_y_continuous(limits = c(0, 40), expand = expansion(add = c(0, 0))) +
   labs(x = NULL, y = "Yen per litre",
        title = "Retailers' margin = retail price - wholesale price\nWholesalers' margin = wholesale price - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
-       caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, etc.")
+       caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy and FRED")
 
 ```
 
