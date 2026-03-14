@@ -15,7 +15,7 @@ Mitsuo Shiota
   - [Subsidy](#subsidy-1)
   - [Margin (monthly)](#margin-monthly)
 
-Updated: 2026-03-14
+Updated: 2026-03-15
 
 ## Weekly update
 
@@ -590,7 +590,7 @@ combo_weekly |>
   geom_line() +
   scale_x_date(date_breaks = "12 week", date_labels = "%y %b %d") +
   labs(x = NULL, y = "Yen per litre",
-       title = "Retail + wholesale margin (weekly)",
+       title = "Retail price (weekly) - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
        caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and Investing.com") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
         panel.grid.minor.x = element_blank())
@@ -650,10 +650,9 @@ dubai <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "2003-
 ### Subsidy
 
 ``` r
-meti_subsidy_monthly <- meti_subsidy|>
-  filter(!is.na(subsidy)) |>
-  mutate(month = yearmonth(start_date)) |>
-  summarize(subsidy = mean(subsidy), .by = month)
+meti_subsidy_monthly <- combo_weekly |> 
+  mutate(month = yearmonth(week)) |>
+  summarize(subsidy = mean(subsidy), .by = month) 
 ```
 
 ### Margin (monthly)
@@ -680,15 +679,12 @@ combo_monthly |>
   filter(month >= yearmonth("2010 Jan")) |> 
   pivot_longer(wholesalers_margin:retailers_margin) |> 
   ggplot(aes(month, value)) +
-  geom_rect(xmin = as.Date("2022-01-01"), xmax = as.Date("2025-12-01"), 
-            ymin = -Inf, ymax = Inf, fill = "gray90", alpha = 0.3) +
   geom_line(aes(color = name), show.legend = FALSE) +
-  annotate("text", x = as.Date("2022-01-01"), y = 10,
-           label = "2022-2025", hjust = -0.2) +
   annotate("text", x = as.Date("2015-01-01"), y = 5,
            label = "Retailers' margin", hjust = -0.2) +
   annotate("text", x = as.Date("2015-01-01"), y = 30,
            label = "Wholesalers' margin", hjust = -0.2) +
+  scale_x_yearmonth(date_breaks = "1 year", date_labels = "%y") +
   scale_y_continuous(limits = c(0, 40), expand = expansion(add = c(0, 0))) +
   labs(x = NULL, y = "Yen per litre",
        title = "Retailers' margin = retail price - wholesale price\nWholesalers' margin = wholesale price - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
