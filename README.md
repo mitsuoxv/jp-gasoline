@@ -1,5 +1,4 @@
-Gasoline retailers’ and wholesalers’ margins in Japan
-================
+# Gasoline retailers’ and wholesalers’ margins in Japan
 Mitsuo Shiota
 2026-03-03
 
@@ -14,6 +13,15 @@ Mitsuo Shiota
   - [Dubai crude oil price (monthly)](#dubai-crude-oil-price-monthly)
   - [Subsidy](#subsidy-1)
   - [Margin (monthly)](#margin-monthly)
+
+``` r
+library(tidyverse)
+library(readxl)
+library(tsibble)
+library(tidyquant)
+
+theme_set(theme_light())
+```
 
 Updated: 2026-03-15
 
@@ -37,7 +45,9 @@ retail <- read_excel("data/260311s5.xlsx",
     date = as.Date(date)
     ) |> 
   filter(!is.na(date))
+```
 
+``` r
 retail |> 
   filter(date >= as.Date("2020-01-01")) |> 
   ggplot(aes(date, retail_price)) +
@@ -50,7 +60,8 @@ retail |>
         panel.grid.minor.x = element_blank())
 ```
 
-![](README_files/figure-gfm/weekly_retail_price-1.png)<!-- -->
+![Gasoline retail price
+(weekly)](README_files/figure-commonmark/retail_price_plot-1.png)
 
 ### Dubai crude oil price (weekly)
 
@@ -61,8 +72,8 @@ prices (weekly average from Tuesday to Monday) from 2022 January up to
 Since it stopped publishing Dubai crude oil prices, I give up
 calculating weekly average from Tuesday to Monday. Instead, I get Monday
 only data from
-<https://www.investing.com/commodities/dubai-crude-oil-platts-futures-historical-data>
-and <https://www.investing.com/currencies/usd-jpy-historical-data>, and
+https://www.investing.com/commodities/dubai-crude-oil-platts-futures-historical-data
+and https://www.investing.com/currencies/usd-jpy-historical-data, and
 regard them as weekly average from Tuesday to Monday.
 
 I fill missing data in price.
@@ -590,13 +601,14 @@ combo_weekly |>
   geom_line() +
   scale_x_date(date_breaks = "12 week", date_labels = "%y %b %d") +
   labs(x = NULL, y = "Yen per litre",
-       title = "Retail price (weekly) - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
+       title = "Margin (weekly) = retail price - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
        caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and Investing.com") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
         panel.grid.minor.x = element_blank())
 ```
 
-![](README_files/figure-gfm/margin_plot_weekly-1.png)<!-- -->
+![Margin
+(weekly)](README_files/figure-commonmark/margin_plot_weekly-1.png)
 
 ## Monthly update
 
@@ -691,6 +703,7 @@ combo_monthly |>
        caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and FRED")
 ```
 
-![](README_files/figure-gfm/margin_plot_monthly-1.png)<!-- -->
+![Margin
+(monthly)](README_files/figure-commonmark/margin_plot_monthly-1.png)
 
 END

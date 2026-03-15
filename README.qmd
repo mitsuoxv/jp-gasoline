@@ -2,15 +2,16 @@
 title: "Gasoline retailers' and wholesalers' margins in Japan"
 author: "Mitsuo Shiota"
 date: "2026-03-03"
-output: 
-  github_document:
-    toc: TRUE
-editor_options: 
-  chunk_output_type: console
+format: 
+  gfm:
+    toc: true
+execute:
+  echo: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+#| label: setup
+#| message: false
 
 library(tidyverse)
 library(readxl)
@@ -28,7 +29,9 @@ Updated: `r Sys.Date()`
 
 Agency for National Resources Energy under METI publishes Monday gasoline prices in its [web site](https://www.enecho.meti.go.jp/statistics/petroleum_and_lpgas/pl007/results.html#headline1) every Wednesday, usually. Sometimes, due to holidays, target dates and publishing dates are delayed.
 
-```{r weekly_retail_price, message=FALSE}
+```{r}
+#| label: weekly_retail_price
+#| message: false
 
 retail <- read_excel("data/260311s5.xlsx", 
                      sheet = "レギュラー",
@@ -39,6 +42,13 @@ retail <- read_excel("data/260311s5.xlsx",
     date = as.Date(date)
     ) |> 
   filter(!is.na(date))
+```
+
+```{r}
+#| label: retail_price_plot
+#| fig-cap: Gasoline retail price (weekly)
+#| fig-width: 6
+#| fig-asp: 0.618
 
 retail |> 
   filter(date >= as.Date("2020-01-01")) |> 
@@ -61,7 +71,8 @@ Since it stopped publishing Dubai crude oil prices, I give up calculating weekly
 
 I fill missing data in price.
 
-```{r input_debai_weekly}
+```{r}
+#| label: input_debai_weekly
 
 meti_dubai_weekly <- tribble(
   ~start_date, ~price,
@@ -295,7 +306,8 @@ In the code below, start_date in meti_subsidy is the same start_date in meti_dub
 
 I fill missing data in subsidy.
 
-```{r input_subsidy}
+```{r}
+#| label: input_subsidy
 
 meti_subsidy <- tribble(
   ~start_date, ~subsidy,
@@ -523,7 +535,8 @@ meti_subsidy <- tribble(
 
 I exclude consumption tax from retail price.
 
-```{r exclude_consumption_tax}
+```{r}
+#| label: exclude_consumption_tax
 
 retail <- retail |> 
   mutate(
@@ -540,7 +553,8 @@ retail <- retail |>
 
 I convert date to week, and combine retail, meti_dubai_weekly and meti_subsidy. I fill missing data in retail_price.
 
-```{r convert_weekly}
+```{r}
+#| label: convert_weekly
 
 retail_weekly <- retail |> 
   mutate(week = yearweek(date)) |> 
@@ -564,7 +578,8 @@ combo_weekly <- meti_dubai_weekly |>
 
 As retail price on Monday reflects previous Tuesday-Monday average Dubai crude oil price and Thursday-Wednesday subsidy, I take 2 weeks lag of dubai and subsidy.
 
-```{r combine_weekly}
+```{r}
+#| label: combine_weekly
 
 combo_weekly <- combo_weekly |> 
   mutate(
@@ -578,7 +593,11 @@ combo_weekly <- combo_weekly |>
 
 Plot.
 
-```{r margin_plot_weekly}
+```{r}
+#| label: margin_plot_weekly
+#| fig-cap: Margin (weekly)
+#| fig-width: 6
+#| fig-asp: 0.618
 
 combo_weekly |> 
   filter(!is.na(margin)) |> 
@@ -598,7 +617,8 @@ combo_weekly |>
 
 ### Retail prices (monthly)
 
-```{r retail_monthly}
+```{r}
+#| label: retail_monthly
 
 retail_monthly <- retail |> 
   mutate(month = yearmonth(date)) |> 
@@ -611,7 +631,9 @@ retail_monthly <- retail |>
 
 Published wholesale prices are monthly, and do not include consumption tax. Published retail prices are weekly, and include consumption tax. I transform published retail prices into monthly retail prices which do not include consumption tax.
 
-```{r wholesale, message=FALSE}
+```{r}
+#| label: wholesale
+#| warning: false
 
 wholesale <- read_excel("data/260227o5.xlsx",
                         sheet = "レギュラー",
@@ -632,7 +654,8 @@ wholesale <- wholesale  |>
 
 I get monthly Dubai crude oil prices in USD / barrel and exchange rates in JPY / USD from [FRED by St. Louis FRB](https://fred.stlouisfed.org/), and transform them into JPY / litre using 1 barrel = 158.987 litre.
 
-```{r dubai_monthly}
+```{r}
+#| label: dubai_monthly
 
 dubai <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "2003-01-01")  |>
   pivot_wider(names_from = symbol, values_from = price) |>
@@ -646,7 +669,8 @@ dubai <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "2003-
 
 ### Subsidy
 
-```{r subsidy_monthly}
+```{r}
+#| label: subsidy_monthly
 
 meti_subsidy_monthly <- combo_weekly |> 
   mutate(month = yearmonth(week)) |>
@@ -658,7 +682,8 @@ meti_subsidy_monthly <- combo_weekly |>
 
 Combine.
 
-```{r combine_monthly}
+```{r}
+#| label: combine_monthly
 
 combo_monthly <- wholesale |> 
   left_join(retail_monthly, by = "month") |> 
@@ -675,7 +700,11 @@ combo_monthly <- wholesale |>
 
 Plot.
 
-```{r margin_plot_monthly}
+```{r}
+#| label: margin_plot_monthly
+#| fig-cap: Margin (monthly)
+#| fig-width: 6
+#| fig-asp: 0.618
 
 combo_monthly |> 
   filter(month >= yearmonth("2010 Jan")) |> 
@@ -689,7 +718,7 @@ combo_monthly |>
   scale_x_yearmonth(date_breaks = "1 year", date_labels = "%y") +
   scale_y_continuous(limits = c(0, 40), expand = expansion(add = c(0, 0))) +
   labs(x = NULL, y = "Yen per litre",
-       title = "Retailers' margin = retail price - wholesale price\nWholesalers' margin = wholesale price - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
+       title = "Retailers' margin = retail price - wholesale price\nWholesalers' margin = wholesale price -\n(Dubai crude oil price (FOB) + gasoline tax - subsidy)",
        caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and FRED")
 
 ```
