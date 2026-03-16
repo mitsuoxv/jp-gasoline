@@ -6,7 +6,9 @@ Mitsuo Shiota
   - [Gasoline retail price (weekly)](#gasoline-retail-price-weekly)
   - [Dubai crude oil price (weekly)](#dubai-crude-oil-price-weekly)
   - [Subsidy](#subsidy)
+  - [Consumption tax](#consumption-tax)
   - [Margin](#margin)
+  - [Plot](#plot)
 - [Monthly update](#monthly-update)
   - [Retail prices (monthly)](#retail-prices-monthly)
   - [Wholesale prices](#wholesale-prices)
@@ -23,7 +25,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-03-15
+Updated: 2026-03-16
 
 ## Weekly update
 
@@ -46,22 +48,6 @@ retail <- read_excel("data/260311s5.xlsx",
     ) |> 
   filter(!is.na(date))
 ```
-
-``` r
-retail |> 
-  filter(date >= as.Date("2020-01-01")) |> 
-  ggplot(aes(date, retail_price)) +
-  geom_line() +
-  scale_x_date(date_breaks = "12 week", date_labels = "%y %b %d") +
-  labs(x = NULL, y = "Yen per litre",
-       title = "Gasoline retail price (weekly)",
-       caption = "Note: including consumption tax\nSource: Agency for National Resources Energy") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
-        panel.grid.minor.x = element_blank())
-```
-
-![Gasoline retail price
-(weekly)](README_files/figure-commonmark/retail_price_plot-1.png)
 
 ### Dubai crude oil price (weekly)
 
@@ -537,9 +523,7 @@ meti_subsidy <- tribble(
   fill(subsidy, .direction = "down")
 ```
 
-### Margin
-
-I exclude consumption tax from retail price.
+### Consumption tax
 
 ``` r
 retail <- retail |> 
@@ -549,10 +533,12 @@ retail <- retail |>
       date < as.Date("2014-04-01") ~ .05,
       date < as.Date("2019-10-01") ~ .08,
       .default = .1),
-    retail_price = retail_price  / (1 + consumption_tax_rate)
+    consumption_tax = retail_price * (1 - 1 / (1 + consumption_tax_rate))
   ) |> 
-  select(date, retail_price)
+  select(date, retail_price, consumption_tax)
 ```
+
+### Margin
 
 I convert date to week, and combine retail, meti_dubai_weekly and
 meti_subsidy. I fill missing data in retail_price.
@@ -560,7 +546,7 @@ meti_subsidy. I fill missing data in retail_price.
 ``` r
 retail_weekly <- retail |> 
   mutate(week = yearweek(date)) |> 
-  select(week, retail_price)
+  select(week, retail_price, consumption_tax)
 
 meti_dubai_weekly <- meti_dubai_weekly |> 
   mutate(week = yearweek(start_date)) |> 
@@ -573,8 +559,8 @@ meti_subsidy_weekly <- meti_subsidy |>
 combo_weekly <- meti_dubai_weekly |> 
   left_join(retail_weekly, by = "week") |> 
   left_join(meti_subsidy_weekly, by = "week") |> 
-  fill(retail_price, .direction = "down") |> 
-  select(week, retail_price, dubai, subsidy)
+  fill(retail_price, consumption_tax, .direction = "down") |> 
+  select(week, retail_price, consumption_tax, dubai, subsidy)
 ```
 
 As retail price on Monday reflects previous Tuesday-Monday average Dubai
@@ -587,28 +573,35 @@ combo_weekly <- combo_weekly |>
     across(dubai:subsidy, \(x) lag(x, n = 2)),
     gas_tax = if_else(week < yearweek("2026 W02"), 53.8, 28.7),
     subsidy = if_else(is.na(subsidy), 0, subsidy),
-    margin =retail_price - (dubai + gas_tax - subsidy)
-  )
+    margin = retail_price - consumption_tax - (dubai + gas_tax - subsidy)
+  ) |> 
+  filter(!is.na(margin)) |> 
+  mutate(week = as.Date(week))
 ```
 
-Plot.
+### Plot
 
 ``` r
 combo_weekly |> 
-  filter(!is.na(margin)) |> 
-  mutate(week = as.Date(week)) |> 
-  ggplot(aes(week, margin)) +
-  geom_line() +
+  mutate(subsidy = - subsidy) |> 
+  pivot_longer(consumption_tax:margin) |> 
+  mutate(name = factor(name,
+                       levels = c("consumption_tax", "dubai", "margin", "gas_tax", "subsidy"),
+                       labels = c("Consumption tax", "Dubai crude oil\nprice (FOB)", "Margin", "Gasoline tax", "Subsidy"))) |> 
+  ggplot(aes(week, value)) +
+  geom_area(aes(fill = name)) +
+  geom_line(aes(y = retail_price), data = combo_weekly) +
   scale_x_date(date_breaks = "12 week", date_labels = "%y %b %d") +
-  labs(x = NULL, y = "Yen per litre",
-       title = "Margin (weekly) = retail price - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
-       caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and Investing.com") +
+  scale_fill_brewer(palette = "Set2") +
+  labs(x = NULL, y = "Yen per litre", fill = NULL,
+       title = "Line: Retail price (weekly)\nArea: Decomposition",
+       caption = "Source: Agency for National Resources Energy, and Investing.com") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
         panel.grid.minor.x = element_blank())
 ```
 
-![Margin
-(weekly)](README_files/figure-commonmark/margin_plot_weekly-1.png)
+![Retail price
+(weekly)](README_files/figure-commonmark/plot_weekly-1.png)
 
 ## Monthly update
 
@@ -616,7 +609,10 @@ combo_weekly |>
 
 ``` r
 retail_monthly <- retail |> 
-  mutate(month = yearmonth(date)) |> 
+  mutate(
+    month = yearmonth(date),
+    retail_price = retail_price - consumption_tax
+  ) |> 
   summarize(retail_price = mean(retail_price), .by = month) |> 
   filter(month >= yearmonth("2003-01"))
 ```
@@ -699,8 +695,10 @@ combo_monthly |>
   scale_x_yearmonth(date_breaks = "1 year", date_labels = "%y") +
   scale_y_continuous(limits = c(0, 40), expand = expansion(add = c(0, 0))) +
   labs(x = NULL, y = "Yen per litre",
-       title = "Retailers' margin = retail price - wholesale price\nWholesalers' margin = wholesale price - (Dubai crude oil price (FOB) +\ngasoline tax - subsidy)",
-       caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and FRED")
+       title = "Retailers' margin = retail price - consumption tax - wholesale price\nWholesalers' margin = wholesale price -\n(Dubai crude oil price (FOB) + gasoline tax - subsidy)",
+       caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and FRED") +
+  theme(axis.text.x = element_text(hjust = -0.5),
+        panel.grid.minor.x = element_blank())
 ```
 
 ![Margin
