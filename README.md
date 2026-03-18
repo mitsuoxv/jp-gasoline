@@ -53,6 +53,7 @@ retail_weekly <- retail |>
   as_tsibble(index = week) |> 
   fill_gaps() |> 
   fill(retail_price, .direction = "down") |> 
+  append_row() |> 
   as_tibble()
 ```
 
@@ -576,7 +577,6 @@ combo_weekly <- combo_weekly |>
     subsidy = if_else(is.na(subsidy), 0, subsidy),
     margin = retail_price - consumption_tax - (dubai + gas_tax - subsidy)
   ) |> 
-  filter(!is.na(margin)) |> 
   mutate(week = as.Date(week))
 ```
 
@@ -587,8 +587,8 @@ combo_weekly |>
   mutate(subsidy = - subsidy) |> 
   pivot_longer(consumption_tax:margin) |> 
   mutate(name = factor(name,
-                       levels = c("consumption_tax", "dubai", "margin", "gas_tax", "subsidy"),
-                       labels = c("Consumption tax", "Dubai crude oil\nprice (FOB)", "Margin (CIF over FOB,\nrefinery, distribution, etc.)", "Gasoline tax", "Subsidy"))) |> 
+                       levels = c("consumption_tax", "margin","dubai",  "gas_tax", "subsidy"),
+                       labels = c("Consumption tax", "Margin (CIF over FOB,\nrefinery, distribution, etc.)", "Dubai crude oil\nprice (FOB)", "Gasoline tax", "Subsidy"))) |> 
   filter(year(week) > 2024) |> 
   ggplot(aes(week, value)) +
   geom_col(aes(fill = name), width = 7) +
@@ -603,6 +603,12 @@ combo_weekly |>
         panel.grid.minor.x = element_blank(),
         plot.caption.position = "plot")
 ```
+
+    Warning: Removed 2 rows containing missing values or values outside the scale range
+    (`geom_col()`).
+
+    Warning: Removed 1 row containing missing values or values outside the scale range
+    (`geom_line()`).
 
 ![Retail price
 (weekly)](README_files/figure-commonmark/plot_weekly-1.png)
