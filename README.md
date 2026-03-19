@@ -25,7 +25,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-03-18
+Updated: 2026-03-19
 
 ## Weekly update
 
@@ -589,19 +589,44 @@ combo_weekly |>
   mutate(name = factor(name,
                        levels = c("consumption_tax", "margin","dubai",  "gas_tax", "subsidy"),
                        labels = c("Consumption tax", "Margin (CIF over FOB,\nrefinery, distribution, etc.)", "Dubai crude oil\nprice (FOB)", "Gasoline tax", "Subsidy"))) |> 
-  filter(year(week) > 2024) |> 
+  filter(year(week) >= 2024) |> 
   ggplot(aes(week, value)) +
-  geom_col(aes(fill = name), width = 7) +
+  geom_col(aes(fill = name), width = 7, show.legend = FALSE) +
   geom_line(aes(y = retail_price),
-            data = combo_weekly |> filter(year(week) > 2024)) +
-  scale_x_date(date_breaks = "4 week", date_labels = "%y %b %d") +
+            data = combo_weekly |> filter(year(week) >= 2024)) +
+  geom_text(aes(y = retail_price, label = retail_price),
+            hjust = 0.5, vjust = -0.2,
+            data = combo_weekly |> 
+              filter(!is.na(retail_price)) |> 
+              slice_tail(n = 1)) +
+  annotate("text", label = "Consumption tax",
+           x = as.Date("2025-01-01"), y = 220,
+           hjust = 0.5, vjust = 0.5) +
+  annotate("text", label = "Margin (CIF over FOB, refinery, distribution, etc.",
+           x = as.Date("2025-01-01"), y = 150,
+           hjust = 0.5, vjust = 0.5) +
+  annotate("text", label = "Dubai crude oil price (FOB)",
+           x = as.Date("2025-01-01"), y = 90,
+           hjust = 0.5, vjust = 0.5) +
+  annotate("text", label = "Gasoline tax",
+           x = as.Date("2025-01-01"), y = 30,
+           hjust = 0.5, vjust = 0.5) +
+  annotate("text", label = "Subsidy",
+           x = as.Date("2025-01-01"), y = -30,
+           hjust = 0.5, vjust = 0.5) +
+  annotate("text", label = "Retail price",
+           x = as.Date("2025-11-01"), y = 230,
+           hjust = 0, vjust = 0.5) +
+  annotate("segment", x = as.Date("2026-01-01"), xend = as.Date("2026-02-01"),
+           y = 215, yend = 160, arrow = arrow(length = unit(2, "mm"))) +
+  scale_x_date(date_breaks = "4 week", date_labels = "%y %b %d",
+               expand = expansion(add = c(0, 20))) +
   scale_fill_brewer(palette = "Set2") +
   labs(x = NULL, y = "Yen per litre", fill = NULL,
        title = "Retail price (weekly) and its decomposition",
        caption = "Source: Agency for National Resources Energy, and Investing.com") +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
-        panel.grid.minor.x = element_blank(),
-        plot.caption.position = "plot")
+        panel.grid.minor.x = element_blank())
 ```
 
     Warning: Removed 2 rows containing missing values or values outside the scale range
