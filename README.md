@@ -25,7 +25,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-03-25
+Updated: 2026-03-31
 
 ## Weekly update
 
@@ -589,8 +589,7 @@ combo_weekly |>
   mutate(subsidy = - subsidy) |> 
   pivot_longer(consumption_tax:margin) |> 
   mutate(name = factor(name,
-                       levels = c("consumption_tax", "margin","dubai",  "gas_tax", "subsidy"),
-                       labels = c("Consumption tax", "Margin (CIF over FOB,\nrefinery, distribution, etc.)", "Dubai crude oil\nprice (FOB)", "Gasoline tax", "Subsidy"))) |> 
+                       levels = c("consumption_tax", "margin","dubai",  "gas_tax", "subsidy"))) |> 
   filter(year(week) >= 2024) |> 
   ggplot(aes(week, value)) +
   geom_col(aes(fill = name), width = 7, show.legend = FALSE) +
@@ -604,7 +603,7 @@ combo_weekly |>
   annotate("text", label = "Consumption tax",
            x = as.Date("2025-01-01"), y = 220,
            hjust = 0.5, vjust = 0.5) +
-  annotate("text", label = "Margin (CIF over FOB, refinery, distribution, etc.",
+  annotate("text", label = "Margin (CIF over FOB, refinery, distribution, etc.)",
            x = as.Date("2025-01-01"), y = 150,
            hjust = 0.5, vjust = 0.5) +
   annotate("text", label = "Dubai crude oil price (FOB)",
@@ -662,7 +661,7 @@ transform published retail prices into monthly retail prices which do
 not include consumption tax.
 
 ``` r
-wholesale <- read_excel("data/260227o5.xlsx",
+wholesale <- read_excel("data/260331o5.xlsx",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
