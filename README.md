@@ -18,6 +18,11 @@ Mitsuo Shiota
 
 ``` r
 library(tidyverse)
+```
+
+    Warning: package 'dplyr' was built under R version 4.5.3
+
+``` r
 library(readxl)
 library(tsibble)
 library(tidyquant)
@@ -25,7 +30,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-04-01
+Updated: 2026-04-08
 
 ## Weekly update
 
@@ -38,7 +43,7 @@ every Wednesday, usually. Sometimes, due to holidays, target dates and
 publishing dates are delayed.
 
 ``` r
-retail <- read_excel("data/260401s5.xlsx", 
+retail <- read_excel("data/260408s5.xlsx", 
                      sheet = "レギュラー",
                      col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
@@ -295,7 +300,8 @@ meti_dubai_weekly <- tribble(
 "2026-03-03", 106.7, # 03-09(Mon) 107.55 * 157.67 / 159
 "2026-03-10", 130.0, # 03-16(Mon) 129.90 * 159.07 / 159
 "2026-03-17", 131.5, # 03-23(Mon) 131.97 * 158.44 / 159
-"2026-03-24", 129.1 # 03-30(Mon) 128.51 * 159.73 / 159
+"2026-03-24", 129.1, # 03-30(Mon) 128.51 * 159.73 / 159
+"2026-03-31", 121.0 # 04-06(Mon) 120.43 * 159.69 / 159
 ) |> 
   fill(price, .direction = "down")
 ```
@@ -532,7 +538,8 @@ meti_subsidy <- tribble(
 "2026-03-03", 0,
 "2026-03-10", 30.2,
 "2026-03-17", 48.1,
-"2026-03-24", 49.8
+"2026-03-24", 49.8,
+"2026-03-31", 48.8
 ) |> 
   fill(subsidy, .direction = "down")
 ```
