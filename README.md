@@ -25,7 +25,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-05-20
+Updated: 2026-05-27
 
 ## Weekly update
 
@@ -38,7 +38,7 @@ every Wednesday, usually. Sometimes, due to holidays, target dates and
 publishing dates are delayed.
 
 ``` r
-retail <- read_excel("data/260520s5.xlsx", 
+retail <- read_excel("data/260527s5.xlsx", 
                      sheet = "レギュラー",
                      col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
@@ -302,7 +302,8 @@ meti_dubai_weekly <- tribble(
 "2026-04-21", 106.3, # 04-27(Mon) 105.97 * 159.43 / 159
 "2026-04-28", 105.7, # 05-04(Mon) 106.93 * 157.23 / 159
 "2026-05-05", 99.5, # 05-11(Mon) 100.70 * 157.18 / 159
-"2026-05-12", 105.7 # 05-18(Mon) 105.78 * 158.84 / 159
+"2026-05-12", 105.7, # 05-18(Mon) 105.78 * 158.84 / 159
+"2026-05-19", 103.3 # 05-25(Mon) 103.36 * 158.90 / 159
 ) |> 
   fill(price, .direction = "down")
 ```
@@ -546,7 +547,8 @@ meti_subsidy <- tribble(
 "2026-04-21", 39.7,
 "2026-04-28", NA,
 "2026-05-05", 42.6,
-"2026-05-12", 41.8
+"2026-05-12", 41.8,
+"2026-05-19", 37.2
 ) |> 
   fill(subsidy, .direction = "down")
 ```
