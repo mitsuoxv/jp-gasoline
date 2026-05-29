@@ -25,7 +25,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-05-27
+Updated: 2026-05-29
 
 ## Weekly update
 
@@ -679,7 +679,7 @@ transform published retail prices into monthly retail prices which do
 not include consumption tax.
 
 ``` r
-wholesale <- read_excel("data/260430o5.xlsx",
+wholesale <- read_excel("data/260529o5.xlsx",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
@@ -755,7 +755,7 @@ combo_monthly |>
         panel.grid.minor.x = element_blank())
 ```
 
-    Warning: Removed 1 row containing missing values or values outside the scale range
+    Warning: Removed 2 rows containing missing values or values outside the scale range
     (`geom_line()`).
 
 ![Margin

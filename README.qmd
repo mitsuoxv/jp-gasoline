@@ -671,7 +671,7 @@ Published wholesale prices are monthly, and do not include consumption tax. Publ
 #| label: wholesale
 #| warning: false
 
-wholesale <- read_excel("data/260430o5.xlsx",
+wholesale <- read_excel("data/260529o5.xlsx",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
