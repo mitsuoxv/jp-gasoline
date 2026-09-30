@@ -25,7 +25,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-09-16
+Updated: 2026-09-30
 
 ## Weekly update
 
@@ -38,7 +38,7 @@ every Wednesday, usually. Sometimes, due to holidays, target dates and
 publishing dates are delayed.
 
 ``` r
-retail <- read_excel("data/260916s5.xlsx", 
+retail <- read_excel("data/260930s5.xlsx", 
                      sheet = "レギュラー",
                      col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
@@ -319,7 +319,9 @@ meti_dubai_weekly <- tribble(
 "2026-08-18", 90.2, # 08-24(Mon) 90.10 * 159.11 / 159
 "2026-08-25", 89.2, # 08-31(Mon) 88.75 * 159.74 / 159
 "2026-09-01", 97.2, # 09-07(Mon) 100.16 * 154.37 / 159
-"2026-09-08", 112.8 # 09-14(Mon) 116.22 * 154.36 / 159
+"2026-09-08", 112.8, # 09-14(Mon) 116.22 * 154.36 / 159
+"2026-09-15", 112.8, # 09-21(Mon) 113.98 * 157.38 / 159
+"2026-09-22", 112.9 # 09-28(Mon) 114.06 * 157.38 / 159
 ) |> 
   fill(price, .direction = "down")
 ```
@@ -580,7 +582,9 @@ meti_subsidy <- tribble(
 "2026-08-18", 32.5,
 "2026-08-25", 26.2,
 "2026-09-01", 36.0,
-"2026-09-08", 51.0
+"2026-09-08", 51.0,
+"2026-09-15", NA,
+"2026-09-22", 50.7
 ) |> 
   fill(subsidy, .direction = "down")
 ```
@@ -711,7 +715,7 @@ transform published retail prices into monthly retail prices which do
 not include consumption tax.
 
 ``` r
-wholesale <- read_excel("data/260831o5.xlsx",
+wholesale <- read_excel("data/260930o5.xlsx",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
@@ -786,6 +790,9 @@ combo_monthly |>
   theme(axis.text.x = element_text(hjust = -0.5),
         panel.grid.minor.x = element_blank())
 ```
+
+    Warning: Removed 1 row containing missing values or values outside the scale range
+    (`geom_line()`).
 
 ![Margin
 (monthly)](README_files/figure-commonmark/margin_plot_monthly-1.png)
