@@ -745,7 +745,7 @@ rates in JPY / USD from [FRED by St. Louis
 FRB](https://fred.stlouisfed.org/), and transform them into JPY / litre
 using 1 barrel = 158.987 litre.
 
-As I could not get Dubai prices, I switched to Global Brent prices.
+As Dubai lacks some data, I switched to Brent.
 
 ``` r
 dubai <- tq_get(c("POILBREUSDM", "EXJPUS"), get = "economic.data", from = "2003-01-01")  |>
@@ -795,16 +795,14 @@ combo_monthly |>
   annotate("text", x = as.Date("2015-01-01"), y = 30,
            label = "Wholesalers' margin", hjust = -0.2) +
   scale_x_yearmonth(date_breaks = "1 year", date_labels = "%y") +
-  scale_y_continuous(limits = c(0, 40), expand = expansion(add = c(0, 0))) +
+  scale_y_continuous(expand = expansion(add = c(0, 0))) +
+  expand_limits(y = 0) +
   labs(x = NULL, y = "Yen per litre",
        title = "Retailers' margin = retail price - consumption tax - wholesale price\nWholesalers' margin = wholesale price -\n(Brent crude oil price (FOB) + gasoline tax - subsidy)",
        caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and FRED") +
   theme(axis.text.x = element_text(hjust = -0.5),
         panel.grid.minor.x = element_blank())
 ```
-
-    Warning: Removed 2 rows containing missing values or values outside the scale range
-    (`geom_line()`).
 
 ![Margin
 (monthly)](README_files/figure-commonmark/margin_plot_monthly-1.png)
