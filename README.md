@@ -12,7 +12,8 @@ Mitsuo Shiota
 - [Monthly update](#monthly-update)
   - [Retail prices (monthly)](#retail-prices-monthly)
   - [Wholesale prices](#wholesale-prices)
-  - [Dubai crude oil price (monthly)](#dubai-crude-oil-price-monthly)
+  - [Global Brent crude oil price
+    (monthly)](#global-brent-crude-oil-price-monthly)
   - [Subsidy](#subsidy-1)
   - [Margin (monthly)](#margin-monthly)
 
@@ -25,7 +26,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-10-28
+Updated: 2026-10-30
 
 ## Weekly update
 
@@ -723,7 +724,7 @@ transform published retail prices into monthly retail prices which do
 not include consumption tax.
 
 ``` r
-wholesale <- read_excel("data/260930o5.xlsx",
+wholesale <- read_excel("data/261030o5.xlsx",
                         sheet = "レギュラー",
                         col_types = c("text", "date", rep("numeric", 55))
                         ) |> 
@@ -737,17 +738,20 @@ wholesale <- wholesale  |>
   filter(month >= yearmonth("2003-01"))
 ```
 
-### Dubai crude oil price (monthly)
+### Global Brent crude oil price (monthly)
 
-I get monthly Dubai crude oil prices in USD / barrel and exchange rates
-in JPY / USD from [FRED by St. Louis FRB](https://fred.stlouisfed.org/),
-and transform them into JPY / litre using 1 barrel = 158.987 litre.
+I get monthly Global Brent crude oil prices in USD / barrel and exchange
+rates in JPY / USD from [FRED by St. Louis
+FRB](https://fred.stlouisfed.org/), and transform them into JPY / litre
+using 1 barrel = 158.987 litre.
+
+As I could not get Dubai prices, I switched to Global Brent prices.
 
 ``` r
-dubai <- tq_get(c("POILDUBUSDM", "EXJPUS"), get = "economic.data", from = "2003-01-01")  |>
+dubai <- tq_get(c("POILBREUSDM", "EXJPUS"), get = "economic.data", from = "2003-01-01")  |>
   pivot_wider(names_from = symbol, values_from = price) |>
   mutate(
-    dubai_oil_price = POILDUBUSDM * EXJPUS / 158.987,
+    dubai_oil_price = POILBREUSDM * EXJPUS / 158.987,
     month = yearmonth(date)
     ) |>
   select(month, dubai_oil_price)
@@ -793,13 +797,13 @@ combo_monthly |>
   scale_x_yearmonth(date_breaks = "1 year", date_labels = "%y") +
   scale_y_continuous(limits = c(0, 40), expand = expansion(add = c(0, 0))) +
   labs(x = NULL, y = "Yen per litre",
-       title = "Retailers' margin = retail price - consumption tax - wholesale price\nWholesalers' margin = wholesale price -\n(Dubai crude oil price (FOB) + gasoline tax - subsidy)",
+       title = "Retailers' margin = retail price - consumption tax - wholesale price\nWholesalers' margin = wholesale price -\n(Brent crude oil price (FOB) + gasoline tax - subsidy)",
        caption = "Note: excluding consumption tax\nSource: Agency for National Resources Energy, and FRED") +
   theme(axis.text.x = element_text(hjust = -0.5),
         panel.grid.minor.x = element_blank())
 ```
 
-    Warning: Removed 1 row containing missing values or values outside the scale range
+    Warning: Removed 2 rows containing missing values or values outside the scale range
     (`geom_line()`).
 
 ![Margin
