@@ -26,7 +26,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-10-30
+Updated: 2026-11-05
 
 ## Weekly update
 
@@ -39,7 +39,7 @@ every Wednesday, usually. Sometimes, due to holidays, target dates and
 publishing dates are delayed.
 
 ``` r
-retail <- read_excel("data/261028s5.xlsx", 
+retail <- read_excel("data/261105s5.xlsx", 
                      sheet = "レギュラー",
                      col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
@@ -326,7 +326,8 @@ meti_dubai_weekly <- tribble(
 "2026-09-29", 106.5, # 10-05(Mon) 107.20 * 157.92 / 159
 "2026-10-06", 109.8, # 10-12(Mon) 110.09 * 158.64 / 159
 "2026-10-13", 108.3, # 10-19(Mon) 108.68 * 158.50 / 159
-"2026-10-20", 110.2 # 10-26(Mon) 111.20 * 157.51 / 159
+"2026-10-20", 110.2, # 10-26(Mon) 111.20 * 157.51 / 159
+"2026-10-27", 102.9 # 11-02(Mon) 103.61 * 157.95 / 159
 ) |> 
   fill(price, .direction = "down")
 ```
@@ -593,7 +594,8 @@ meti_subsidy <- tribble(
 "2026-09-29", 42.4,
 "2026-10-06", 43.0,
 "2026-10-13", 42.8,
-"2026-10-20", 52.4
+"2026-10-20", 52.4,
+"2026-10-27", 51.9
 ) |> 
   fill(subsidy, .direction = "down")
 ```
@@ -795,7 +797,7 @@ combo_monthly |>
   annotate("text", x = as.Date("2015-01-01"), y = 30,
            label = "Wholesalers' margin", hjust = -0.2) +
   scale_x_yearmonth(date_breaks = "1 year", date_labels = "%y") +
-  scale_y_continuous(expand = expansion(add = c(0, 0))) +
+  scale_y_continuous(expand = expansion(add = c(0, 2))) +
   expand_limits(y = 0) +
   labs(x = NULL, y = "Yen per litre",
        title = "Retailers' margin = retail price - consumption tax - wholesale price\nWholesalers' margin = wholesale price -\n(Brent crude oil price (FOB) + gasoline tax - subsidy)",
