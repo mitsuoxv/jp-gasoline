@@ -19,6 +19,11 @@ Mitsuo Shiota
 
 ``` r
 library(tidyverse)
+```
+
+    Warning: package 'ggplot2' was built under R version 4.6.2
+
+``` r
 library(readxl)
 library(tsibble)
 library(tidyquant)
@@ -26,7 +31,7 @@ library(tidyquant)
 theme_set(theme_light())
 ```
 
-Updated: 2026-11-12
+Updated: 2026-11-18
 
 ## Weekly update
 
@@ -39,7 +44,7 @@ every Wednesday, usually. Sometimes, due to holidays, target dates and
 publishing dates are delayed.
 
 ``` r
-retail <- read_excel("data/261111s5.xlsx", 
+retail <- read_excel("data/261118s5.xlsx", 
                      sheet = "レギュラー",
                      col_types = c("text", "date", rep("numeric", 59))) |> 
   select(2:3) |> 
@@ -328,7 +333,8 @@ meti_dubai_weekly <- tribble(
 "2026-10-13", 108.3, # 10-19(Mon) 108.68 * 158.50 / 159
 "2026-10-20", 110.2, # 10-26(Mon) 111.20 * 157.51 / 159
 "2026-10-27", 102.9, # 11-02(Mon) 103.61 * 157.95 / 159
-"2026-11-03", 92.9 # 11-09(Mon) 93.59 * 157.91 / 159
+"2026-11-03", 92.9, # 11-09(Mon) 93.59 * 157.91 / 159
+"2026-11-10", 92.4 # 11-16(Mon) 92.14 * 159.44 / 159
 ) |> 
   fill(price, .direction = "down")
 ```
@@ -597,7 +603,8 @@ meti_subsidy <- tribble(
 "2026-10-13", 42.8,
 "2026-10-20", 52.4,
 "2026-10-27", 51.9,
-"2026-11-03", 36.7
+"2026-11-03", 36.7,
+"2026-11-10", 29.6
 ) |> 
   fill(subsidy, .direction = "down")
 ```
